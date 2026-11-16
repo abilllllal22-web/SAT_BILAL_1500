@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SAT-BILAL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geologica:wght@500;700&family=Onest:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/* Layout idea: exam command centre. Left rail of sections, one working view at a time,
+   numbers in mono, highlighter yellow marks whatever needs attention today. */
+:root{
+  --bg:#f3f5fb; --surface:#ffffff; --ink:#131a2e; --muted:#5b6480; --line:#dde2ee;
+  --accent:#2a4bd7; --accent-ink:#ffffff; --mark:#ffd84a; --mark-ink:#3a2e00;
+  --good:#1c8a5a; --warn:#b97400; --bad:#cc3f37; --soft:#e9edf9;
+  --display:"Geologica","Onest",system-ui,sans-serif;
+  --body:"Onest",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d111e; --surface:#161b2d; --ink:#e9ecf6; --muted:#9aa3bf; --line:#283048;
+    --accent:#8198ff; --accent-ink:#0d111e; --mark:#ffd84a; --mark-ink:#3a2e00;
+    --good:#4cc38a; --warn:#e5a93b; --bad:#f0766e; --soft:#1f2640; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d111e; --surface:#161b2d; --ink:#e9ecf6; --muted:#9aa3bf; --line:#283048;
+  --accent:#8198ff; --accent-ink:#0d111e; --mark:#ffd84a; --mark-ink:#3a2e00;
+  --good:#4cc38a; --warn:#e5a93b; --bad:#f0766e; --soft:#1f2640; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:400 15px/1.55 var(--body)}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.2}
+h1{font-size:26px;font-weight:700}
+h2{font-size:20px;font-weight:700}
+h3{font-size:15px;font-weight:500}
+p{margin:0}
+a{color:var(--accent)}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.app{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:100vh}
+nav{background:var(--surface);border-right:1px solid var(--line);padding:20px 12px;display:flex;flex-direction:column;gap:4px;position:sticky;top:0;height:100vh;overflow:auto}
+.brand{font-family:var(--display);font-weight:700;font-size:18px;padding:0 10px 12px}
+.brand span{background:var(--mark);color:var(--mark-ink);padding:0 6px;border-radius:4px}
+.grp{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:12px 10px 4px}
+nav a{display:block;padding:8px 10px;border-radius:8px;color:var(--ink);text-decoration:none;font-weight:500}
+nav a:hover{background:var(--soft)}
+nav a.on{background:var(--accent);color:var(--accent-ink)}
+nav a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#sync{margin-top:auto;font-size:12px;color:var(--muted);padding:10px}
+#sync b{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--warn);margin-right:6px}
+#sync.cloud b{background:var(--good)}
+main{padding:24px clamp(16px,3vw,36px) 60px;max-width:1080px;width:100%}
+.view{display:none;flex-direction:column;gap:18px}
+.view.on{display:flex}
+.head{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;justify-content:space-between}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px}
+.grid{display:grid;gap:14px}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.tile .lab{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.tile .val{font:700 28px/1.2 var(--mono);font-variant-numeric:tabular-nums}
+.tile .sub{font-size:13px;color:var(--muted)}
+.bar{height:8px;background:var(--soft);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.task{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--line)}
+.task:first-child{border-top:0}
+.task input{width:18px;height:18px;margin-top:2px;accent-color:var(--accent);flex:none}
+.task label{flex:1;cursor:pointer}
+.task.done label{color:var(--muted);text-decoration:line-through}
+.min{font:500 12px var(--mono);color:var(--muted);white-space:nowrap}
+.pill{display:inline-block;font-size:12px;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--soft);color:var(--ink);white-space:nowrap}
+.pill.mark{background:var(--mark);color:var(--mark-ink)}
+.pill.good{background:color-mix(in srgb,var(--good) 18%,transparent);color:var(--good)}
+.pill.bad{background:color-mix(in srgb,var(--bad) 16%,transparent);color:var(--bad)}
+.pill.warn{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
+.day{border-left:4px solid var(--line)}
+.day.today{border-left-color:var(--mark)}
+.day.full{border-left-color:var(--good)}
+.day.test{border-left-color:var(--accent)}
+.dayhead{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;margin-bottom:4px}
+.phase{font-family:var(--display);font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:8px}
+button,.btn{font:600 14px var(--body);border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:8px 14px;border-radius:8px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button.pri{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button.ghost{border:0;background:none;color:var(--muted);padding:4px 6px}
+input,select,textarea{font:400 14px var(--body);color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-width:0;width:100%}
+form.row,.row{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.row>label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted);flex:1 1 130px}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:8px 10px;border-top:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--muted);font-weight:600;border-top:0}
+.cal{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:6px}
+.cal div{aspect-ratio:1;border-radius:6px;background:var(--soft);display:grid;place-items:center;font:500 11px var(--mono);color:var(--muted)}
+.cal .a1{background:color-mix(in srgb,var(--accent) 35%,var(--soft));color:var(--ink)}
+.cal .a2{background:var(--accent);color:var(--accent-ink)}
+.cal .now{outline:2px solid var(--mark);outline-offset:1px}
+.rate{display:flex;gap:4px}
+.rate button{padding:2px 9px;font:500 12px var(--mono)}
+.rate button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.skill{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:7px 0;border-top:1px solid var(--line)}
+.skill:first-of-type{border-top:0}
+.big{font:700 44px/1.1 var(--mono);font-variant-numeric:tabular-nums}
+.flash{min-height:150px;display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:center;text-align:center}
+.flash .w{font:700 30px var(--display)}
+ul.tight{margin:6px 0 0;padding-left:18px;display:flex;flex-direction:column;gap:5px}
+.res{display:flex;flex-direction:column;gap:2px;padding:10px 0;border-top:1px solid var(--line)}
+.res:first-of-type{border-top:0}
+.fx{font-family:var(--mono);font-size:13px;background:var(--soft);padding:1px 6px;border-radius:4px;white-space:nowrap}
+[hidden]{display:none!important}
+.mbar{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;z-index:2}
+.mclock{font:700 22px var(--mono);font-variant-numeric:tabular-nums}
+.mclock.low{color:var(--bad)}
+.passage{font-size:15px;line-height:1.65;max-width:68ch}
+.choice{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;font-weight:400;padding:11px 14px;margin-top:8px;border-radius:10px}
+.choice b{flex:none;width:26px;height:26px;border-radius:50%;border:1.5px solid var(--muted);display:grid;place-items:center;font:700 13px var(--mono)}
+.choice.on{border-color:var(--accent);background:var(--soft)}
+.chrow{display:flex;gap:4px;align-items:center;margin-top:8px}
+.chrow .choice{margin-top:0;flex:1}
+.choice.xd{opacity:.45}
+.choice.xd span{text-decoration:line-through}
+.choice.ok{border-color:var(--good);background:color-mix(in srgb,var(--good) 12%,transparent)}
+.choice.no{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 10%,transparent)}
+.choice.on b{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.qnav{display:flex;flex-wrap:wrap;gap:6px}
+.qnav button{width:38px;padding:6px 0;font:700 13px var(--mono);border-style:dashed}
+.qnav button.ans{border-style:solid;background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.qnav button.cur{outline:2px solid var(--ink);outline-offset:1px}
+.qnav button.flg{box-shadow:inset 0 -4px 0 var(--mark)}
+.steps{margin:8px 0 0;padding-left:20px;display:flex;flex-direction:column;gap:5px}
+.ex{margin-top:10px;padding:10px 12px;background:var(--soft);border-radius:8px;font-size:14px}
+details summary{cursor:pointer;font-weight:600}
+.hl{background:var(--mark);color:var(--mark-ink);padding:0 4px;border-radius:3px}
+svg text{font-family:var(--mono);font-size:11px;fill:var(--muted)}
+@media (max-width:820px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  nav{position:static;height:auto;flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line);padding:10px 12px;align-items:center}
+  nav a{white-space:nowrap}
+  .grp,#sync{display:none}
+  .brand{padding:0 8px 0 0;white-space:nowrap}
+  .g4{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .g2{grid-template-columns:minmax(0,1fr)}
+}
+@media (prefers-reduced-motion:no-preference){.bar i{transition:width .3s}}
+</style>
+</head>
+<body>
+<div class="app">
+<nav id="nav">
+  <div class="brand">SAT-<span>BILAL</span></div>
+  <div class="grp">Подготовка</div>
+  <a href="#today">Сегодня</a>
+  <a href="#plan">План на 19 дней</a>
+  <a href="#toolkit">Тактика и формулы</a>
+  <a href="#desmos">Desmos: гайд</a>
+  <a href="#resources">Источники</a>
+  <div class="grp">Тренировка</div>
+  <a href="#bank">Банк вопросов</a>
+  <a href="#minis">Тесты и модули</a>
+  <a href="#drill">Таймер и блиц</a>
+  <a href="#vocab">Слова</a>
+  <div class="grp">Аналитика</div>
+  <a href="#tests">График баллов</a>
+  <a href="#errors">Журнал ошибок</a>
+  <a href="#skills">Аналитика</a>
+  <a href="#testday">День экзамена</a>
+  <div id="sync"><b></b><span>Сохраняется на этом устройстве</span></div>
+</nav>
+<main>
+
+<section class="view" id="v-today">
+  <div class="head"><h1>План на сегодня</h1><span class="pill mark" id="todayDate"></span></div>
+  <div class="grid g4">
+    <div class="card tile"><div class="lab">До экзамена</div><div class="val" id="tLeft">—</div><div class="sub">суббота, 5 декабря, 07:45</div></div>
+    <div class="card tile"><div class="lab">Балл → цель</div><div class="val"><span id="tScore">—</span> → <span id="tTarget"></span></div><div class="sub" id="tGap"></div></div>
+    <div class="card tile"><div class="lab">Серия дней</div><div class="val" id="tStreak">0</div><div class="sub">подряд с занятиями</div></div>
+    <div class="card tile"><div class="lab">План выполнен</div><div class="val" id="tPct">0%</div><div class="bar"><i id="tBar" style="width:0"></i></div></div>
+  </div>
+  <div class="grid g2">
+    <div class="card"><div class="dayhead"><h2 id="todayTitle"></h2></div><div id="todayTasks"></div></div>
+    <div class="grid">
+      <div class="card"><h3>Что тянет балл вниз</h3><div id="weak" class="small" style="margin-top:8px"></div></div>
+      <div class="card"><h3>Активность: 16 ноября – 5 декабря</h3><div class="cal" id="cal" style="margin-top:10px"></div></div>
+      <div class="card"><h3>Цель</h3>
+        <div class="row" style="margin-top:8px"><label>Целевой балл (400–1600)<input id="target" type="number" min="400" max="1600" step="10"></label><button id="saveTarget">Сохранить</button></div>
+        <p class="small muted" id="advice" style="margin-top:8px"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="view" id="v-plan">
+  <div class="head"><h1>План на 19 дней</h1><span class="muted small">Будни: 1,5–2 часа. Выходные: 3–4 часа. Четыре полных теста в Bluebook.</span></div>
+  <div class="card small">Принцип: тест → разбор каждой ошибки → точечная работа по слабым навыкам → новый тест. Сам тест балл не повышает, его повышает разбор. Если день пропущен, не догоняйте всё: сделайте задачи с тестами и разбором, остальное сократите.</div>
+  <div id="plan" class="grid"></div>
+</section>
+
+<section class="view" id="v-tests">
+  <div class="head"><h1>Пробные тесты</h1><span class="muted small">Записывайте только полные тесты, пройденные по таймеру</span></div>
+  <div class="card"><div class="scroll"><svg id="chart" viewBox="0 0 640 240" width="100%" role="img" aria-label="График баллов пробных тестов"></svg></div></div>
+  <div class="card">
+    <form class="row" id="testForm">
+      <label>Дата<input id="tfDate" type="date" required></label>
+      <label>Reading and Writing (200–800)<input id="tfRW" type="number" min="200" max="800" step="10" required></label>
+      <label>Math (200–800)<input id="tfM" type="number" min="200" max="800" step="10" required></label>
+      <label>Источник<input id="tfSrc" placeholder="Bluebook Test 7"></label>
+      <button class="pri">Добавить тест</button>
+    </form>
+  </div>
+  <div class="card scroll"><table><thead><tr><th>Дата</th><th>Источник</th><th>R&amp;W</th><th>Math</th><th>Итог</th><th></th></tr></thead><tbody id="testRows"></tbody></table></div>
+</section>
+
+<section class="view" id="v-errors">
+  <div class="head"><h1>Журнал ошибок</h1><span class="muted small">Каждая ошибка из тестов и тренировок. Главный инструмент роста балла</span></div>
+  <div class="card">
+    <form class="row" id="errForm">
+      <label>Навык<select id="efSkill"></select></label>
+      <label>Причина<select id="efType"><option value="c">Не знал тему</option><option value="r">Невнимательность</option><option value="t">Не хватило времени</option><option value="s">Попался в ловушку</option></select></label>
+      <label style="flex:3 1 260px">Что сделаю иначе в следующий раз<input id="efNote" required placeholder="Например: дочитывать вопрос — спрашивали 2x, а не x"></label>
+      <button class="pri">Записать ошибку</button>
+    </form>
+  </div>
+  <div class="grid g2">
+    <div class="card"><h3>Ошибки по навыкам</h3><div id="errBars" style="margin-top:10px" class="grid"></div></div>
+    <div class="card"><h3>Ошибки по причинам</h3><div id="errTypes" style="margin-top:10px" class="grid"></div>
+      <p class="small muted" style="margin-top:10px">Не знал тему → урок на Khan Academy и 10 задач. Невнимательность → правило перепроверки. Время → тренировка с таймером. Ловушка → выписать тип ловушки.</p></div>
+  </div>
+  <div class="card scroll"><table><thead><tr><th>Навык</th><th>Причина</th><th>Вывод</th><th>Перерешал</th><th></th></tr></thead><tbody id="errRows"></tbody></table></div>
+</section>
+
+<section class="view" id="v-skills">
+  <div class="head"><h1>Аналитика по навыкам</h1><span class="muted small">Точность считается по всем решённым вопросам. Самооценка: 0 — не знаю · 1 — слабо · 2 — уверенно · 3 — без ошибок на сложных</span></div>
+  <div id="skills" class="grid g2"></div>
+</section>
+
+<section class="view" id="v-bank">
+  <div id="bankHome" class="grid">
+    <div class="head"><h1>Банк вопросов</h1><span class="muted small" id="bStat"></span></div>
+    <div class="card">
+      <div class="row">
+        <label>Секция<select id="bSec"><option value="">Все</option><option value="rw">Reading and Writing</option><option value="m">Math</option></select></label>
+        <label>Раздел<select id="bDom"></select></label>
+        <label>Сложность<select id="bLvl"><option value="">Любая</option><option value="1">Easy</option><option value="2">Medium</option><option value="3">Hard</option></select></label>
+        <label>Статус<select id="bSt"><option value="">Все</option><option value="new">Не решённые</option><option value="wrong">С ошибкой</option></select></label>
+      </div>
+      <p class="small" id="bCount" style="margin:12px 0"></p>
+      <div class="row"><button class="pri" data-b="start">Начать практику</button><button data-b="rq" id="bRq"></button><button data-b="sv" id="bSv"></button></div>
+    </div>
+    <div class="card small">Все вопросы написаны для этого сайта в формате Digital SAT и не являются официальными вопросами College Board. Вопросы Math, слова в контексте, грамматика и переходы создаются генераторами и каждый раз получаются новыми. Каждая ошибка попадает в очередь повторения и уходит из неё, когда вы решите вопрос верно. Для официальных вопросов используйте Bluebook и Question Bank из вкладки «Источники».</div>
+  </div>
+  <div id="bankRun" class="grid" hidden>
+    <div class="mbar"><b id="pTitle"></b><span class="small num" id="pCount"></span><span class="row"><button data-b="save" id="pSave">Сохранить</button><button data-b="quit">Закончить</button></span></div>
+    <div class="card"><div class="dayhead" id="pMeta"></div><div id="pBody"></div><div id="pFb" style="margin-top:12px"></div></div>
+    <div class="row"><button class="pri" data-b="check" id="pCheck">Проверить</button><button class="pri" data-b="next" id="pNext" hidden>Следующий вопрос →</button></div>
+  </div>
+</section>
+
+<section class="view" id="v-minis">
+  <div id="miniHome" class="grid">
+    <div class="head"><h1>Тесты и модули</h1><span class="muted small">Темп как на экзамене: около 71 с на вопрос R&amp;W и 95 с на вопрос Math</span></div>
+    <div class="card small">Вопросы написаны специально для этого сайта в формате Digital SAT: те же типы заданий, порядок и сложность. Это не официальные вопросы College Board. Официальные решайте в Bluebook и Question Bank. Таймер нельзя поставить на паузу, как и на экзамене.</div>
+    <div id="miniList" class="grid g2"></div>
+    <div class="card"><h2>Калькулятор балла</h2>
+      <p class="small muted">Грубая оценка по числу верных ответов. Точную шкалу College Board не публикует, погрешность около 50 баллов на секцию.</p>
+      <div class="row" style="margin-top:10px"><label>Верных в R&amp;W (из 54)<input id="cRW" type="number" min="0" max="54" value="40"></label><label>Верных в Math (из 44)<input id="cM" type="number" min="0" max="44" value="33"></label><div style="flex:1 1 200px"><div class="small muted">Оценка</div><div class="num" id="cOut" style="font-weight:700;font-size:20px"></div></div></div>
+    </div>
+  </div>
+  <div id="miniRun" class="grid" hidden>
+    <div class="mbar">
+      <b id="mTitle"></b>
+      <span><span class="mclock" id="mClock">00:00</span> <button class="ghost" data-mact="hide" id="mHide">Скрыть</button></span>
+      <span class="row"><label style="flex:none;flex-direction:row;align-items:center;gap:6px;font-size:13px;color:var(--ink)"><input type="checkbox" id="mFlag" style="width:auto"> Mark for Review</label><button data-mact="ask">Завершить</button></span>
+    </div>
+    <div class="card" id="mAsk" hidden><p>Завершить модуль? Без ответа: <b id="mLeftQ"></b>. Вернуться к вопросам после завершения нельзя.</p><div class="row" style="margin-top:10px"><button class="pri" data-mact="finish">Да, завершить</button><button data-mact="cancel">Продолжить решать</button></div></div>
+    <div class="card"><div class="muted small" id="mNum"></div><div id="mBody" style="margin-top:8px"></div></div>
+    <div class="row" style="justify-content:space-between"><button data-mact="prev">← Back</button><div class="qnav" id="mNav"></div><button class="pri" data-mact="next">Next →</button></div>
+  </div>
+  <div id="miniRes" class="grid" hidden></div>
+</section>
+
+<section class="view" id="v-drill">
+  <div class="head"><h1>Таймер и блиц</h1></div>
+  <div class="grid g2">
+    <div class="card">
+      <h2>Таймер модуля</h2>
+      <p class="small muted">Решайте набор вопросов из Question Bank в реальном темпе экзамена.</p>
+      <div class="row" style="margin:10px 0"><label>Модуль<select id="tmMode"><option value="32,27">R&amp;W: 32 минуты, 27 вопросов</option><option value="35,22">Math: 35 минут, 22 вопроса</option><option value="15,10">Мини-сет: 15 минут, 10 вопросов</option></select></label></div>
+      <div class="big" id="tmClock">32:00</div>
+      <p class="small" id="tmPace" style="margin:6px 0 12px">Темп: около 71 секунды на вопрос</p>
+      <div class="row"><button class="pri" id="tmStart">Старт</button><button id="tmReset">Сбросить</button></div>
+    </div>
+    <div class="card">
+      <h2>Блиц: устный счёт</h2>
+      <p class="small muted">Быстрые задачи на базовую алгебру. 20 секунд на ответ, три жизни. Тренирует скорость в простых вопросах, чтобы оставить время на сложные.</p>
+      <div id="blitz" style="margin-top:10px">
+        <div class="row"><span class="pill" id="bzLives">♥♥♥</span><span class="pill">Счёт: <span id="bzScore" class="num">0</span></span><span class="pill">Рекорд: <span id="bzBest" class="num">0</span></span><span class="pill warn num" id="bzTime">20</span></div>
+        <p id="bzQ" style="font:500 18px var(--mono);margin:14px 0;min-height:54px">Нажмите «Начать».</p>
+        <form class="row" id="bzForm"><label>Ответ (число)<input id="bzA" inputmode="decimal" autocomplete="off"></label><button class="pri" id="bzGo">Начать</button></form>
+        <p class="small" id="bzMsg" style="margin-top:8px;min-height:20px"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="view" id="v-vocab">
+  <div class="head"><h1>Слова для Words in Context</h1><span class="muted small" id="vcStat"></span></div>
+  <div class="card flash">
+    <div class="w" id="vcWord"></div>
+    <div id="vcBack" class="muted"></div>
+    <div class="row" style="justify-content:center;margin-top:8px"><button id="vcShow">Показать перевод</button><button id="vcNo">Не знаю</button><button class="pri" id="vcYes">Знаю</button></div>
+  </div>
+  <p class="small muted">Слова, которые вы отметили «Знаю», больше не показываются. Сбросить можно кнопкой ниже. На экзамене проверяют значение слова в контексте, поэтому после карточек решайте 10 вопросов Words in Context.</p>
+  <div class="row"><button class="pri" id="vcQuiz">Квиз: 10 слов в контексте</button><button id="vcReset">Начать колоду заново</button></div>
+</section>
+
+<section class="view" id="v-toolkit">
+  <div class="head"><h1>Тактика и формулы</h1></div>
+  <div class="grid g2">
+    <div class="card"><h2>Формат экзамена</h2>
+      <div class="scroll"><table><thead><tr><th>Секция</th><th>Модули</th><th>Вопросы</th><th>Время</th><th>На вопрос</th></tr></thead><tbody>
+      <tr><td>R&amp;W</td><td class="num">2</td><td class="num">27 + 27</td><td class="num">32 + 32 мин</td><td class="num">≈71 с</td></tr>
+      <tr><td>Перерыв</td><td></td><td></td><td class="num">10 мин</td><td></td></tr>
+      <tr><td>Math</td><td class="num">2</td><td class="num">22 + 22</td><td class="num">35 + 35 мин</td><td class="num">≈95 с</td></tr>
+      </tbody></table></div>
+      <ul class="tight small"><li>Тест адаптивный: сложность второго модуля зависит от первого. Высокий балл возможен только через сложный второй модуль, поэтому первый модуль решайте максимально аккуратно.</li><li>Штрафа за неверный ответ нет. Пустых ответов быть не должно.</li><li>Калькулятор Desmos встроен и доступен во всей секции Math.</li></ul>
+    </div>
+    <div class="card"><h2>Темп и порядок</h2>
+      <ul class="tight small"><li>Три прохода: сначала всё лёгкое, затем среднее, в конце отмеченное флажком.</li><li>Застряли дольше 90 секунд: выберите лучший вариант, поставьте флажок, идите дальше.</li><li>R&amp;W: сначала вопросы на грамматику и переходы (они быстрые, идут во второй половине модуля), затем длинные тексты, если так вам удобнее.</li><li>Оставляйте 3 минуты в конце модуля на проверку флажков.</li><li>В Math с открытым ответом вводите ответ без единиц и проверяйте, что спрашивали: x, 2x или x + y.</li></ul>
+    </div>
+    <div class="card"><h2>Reading and Writing</h2>
+      <ul class="tight small"><li><b>Сначала вопрос, потом текст.</b> Вы знаете, что искать.</li><li><b>Words in Context:</b> закройте варианты, подставьте своё слово, затем ищите совпадение.</li><li><b>Доказательство:</b> верный ответ почти дословно подтверждается текстом. Слова always, never, only, prove чаще всего делают вариант неверным.</li><li><b>Transitions:</b> определите связь между предложениями: противопоставление, причина, пример, добавление. Потом смотрите варианты.</li><li><b>Rhetorical Synthesis:</b> читайте только цель в вопросе. Ответ должен выполнять именно её.</li><li><b>Boundaries:</b> точка = точка с запятой = запятая + FANBOYS. Двоеточие и тире стоят после полного предложения.</li><li><b>Form, Structure, Sense:</b> согласование подлежащего и сказуемого, время глагола, местоимения, притяжательные (its / it's), висящие обороты.</li></ul>
+    </div>
+    <div class="card"><h2>Math и Desmos</h2>
+      <ul class="tight small"><li>Уравнение с одной переменной: введите левую и правую часть как два графика, ответ — x точки пересечения.</li><li>Система уравнений: введите оба уравнения, нажмите на точку пересечения.</li><li>Число решений: смотрите, сколько раз графики пересекаются.</li><li>Вершина, нули, максимум параболы: кликните по серым точкам графика.</li><li>Неизвестная константа: используйте слайдер и подбирайте значение.</li><li>Регрессия: таблица и запись <span class="fx">y1 ~ mx1 + b</span>.</li><li>Статистика: <span class="fx">mean()</span>, <span class="fx">median()</span>.</li><li>Если есть варианты ответа, часто быстрее подставить их по очереди.</li></ul>
+    </div>
+  </div>
+  <div class="card"><h2>Формулы, которых нет в справке экзамена</h2>
+    <div class="scroll"><table><tbody>
+    <tr><td>Наклон</td><td><span class="fx">m = (y₂ − y₁)/(x₂ − x₁)</span></td><td>Прямая</td><td><span class="fx">y = mx + b</span>, <span class="fx">y − y₁ = m(x − x₁)</span></td></tr>
+    <tr><td>Параллельные / перпендикулярные</td><td><span class="fx">m₁ = m₂</span> / <span class="fx">m₁·m₂ = −1</span></td><td>Середина, расстояние</td><td><span class="fx">((x₁+x₂)/2, (y₁+y₂)/2)</span>, <span class="fx">√(Δx² + Δy²)</span></td></tr>
+    <tr><td>Корни квадратного</td><td><span class="fx">x = (−b ± √(b² − 4ac))/2a</span></td><td>Дискриминант</td><td><span class="fx">D &gt; 0</span>: 2 корня, <span class="fx">D = 0</span>: 1, <span class="fx">D &lt; 0</span>: 0</td></tr>
+    <tr><td>Вершина параболы</td><td><span class="fx">x = −b/2a</span>; <span class="fx">y = a(x − h)² + k</span></td><td>Сумма и произведение корней</td><td><span class="fx">−b/a</span> и <span class="fx">c/a</span></td></tr>
+    <tr><td>Экспоненциальный рост</td><td><span class="fx">y = a(1 ± r)ᵗ</span></td><td>Процентное изменение</td><td><span class="fx">(новое − старое)/старое × 100</span></td></tr>
+    <tr><td>Окружность</td><td><span class="fx">(x − h)² + (y − k)² = r²</span></td><td>Дуга и сектор</td><td><span class="fx">(θ/360)·2πr</span>, <span class="fx">(θ/360)·πr²</span></td></tr>
+    <tr><td>Тригонометрия</td><td><span class="fx">sin = противолежащий/гипотенуза</span>, <span class="fx">sin x = cos(90° − x)</span></td><td>Радианы</td><td><span class="fx">180° = π</span></td></tr>
+    <tr><td>Степени</td><td><span class="fx">aᵐ·aⁿ = aᵐ⁺ⁿ</span>, <span class="fx">a^(m/n) = ⁿ√aᵐ</span></td><td>Среднее</td><td><span class="fx">сумма / количество</span></td></tr>
+    </tbody></table></div>
+  </div>
+</section>
+
+<section class="view" id="v-desmos">
+  <div class="head"><h1>Desmos на экзамене</h1><span class="muted small" id="dsStat"></span></div>
+  <div class="card">
+    <h2>Что это и где находится</h2>
+    <ul class="tight small">
+      <li>Desmos — графический калькулятор, встроенный в Bluebook. Он доступен во всей секции Math, в обоих модулях.</li>
+      <li>Чтобы открыть его, нажмите кнопку <b>Calculator</b> в правом верхнем углу экрана. Окно можно перетаскивать и разворачивать.</li>
+      <li>Слева список строк, куда вы печатаете. Справа график. Каждая строка рисуется своим цветом.</li>
+      <li>Тренируйтесь в <a href="https://www.desmos.com/testing/cb-digital-sat/graphing" target="_blank" rel="noopener">версии Desmos для SAT</a>: она такая же, как на экзамене.</li>
+    </ul>
+  </div>
+  <div class="grid g2">
+    <div class="card"><h2>Как вводить</h2>
+      <div class="scroll"><table><thead><tr><th>Нужно</th><th>Печатайте</th></tr></thead><tbody>
+      <tr><td>Степень x²</td><td><span class="fx">x^2</span>, затем стрелка вправо</td></tr>
+      <tr><td>Дробь</td><td><span class="fx">/</span>, числитель берите в скобки</td></tr>
+      <tr><td>Корень</td><td><span class="fx">sqrt</span></td></tr>
+      <tr><td>Число π</td><td><span class="fx">pi</span></td></tr>
+      <tr><td>Модуль</td><td><span class="fx">abs(x)</span> или клавиша <span class="fx">|</span></td></tr>
+      <tr><td>≤ и ≥</td><td><span class="fx">&lt;=</span> и <span class="fx">&gt;=</span></td></tr>
+      <tr><td>Функция</td><td><span class="fx">f(x)=2x+1</span>, затем <span class="fx">f(3)</span></td></tr>
+      </tbody></table></div>
+    </div>
+    <div class="card"><h2>Как смотреть график</h2>
+      <ul class="tight small">
+        <li><b>Масштаб:</b> кнопки + и − справа или колёсико мыши. Значок домика возвращает стандартный вид.</li>
+        <li><b>Сдвиг:</b> зажмите график и тяните.</li>
+        <li><b>Ключевые точки:</b> кликните по линии. Появятся серые точки: пересечения с осями, вершины, пересечения графиков. Клик по точке показывает координаты.</li>
+        <li><b>График не виден:</b> уменьшите масштаб или нажмите на гаечный ключ и задайте границы осей вручную.</li>
+        <li><b>Скрыть строку:</b> нажмите цветной кружок слева от неё.</li>
+        <li><b>Дробь вместо десятичной:</b> у результата вычисления есть кнопка переключения в дробь.</li>
+      </ul>
+    </div>
+  </div>
+  <h2>12 приёмов с примерами</h2>
+  <p class="small muted">Повторите каждый пример в Desmos своими руками и отметьте приём галочкой. Цель: все 12 до третьего пробного теста.</p>
+  <div id="dsList" class="grid g2"></div>
+  <div class="grid g2">
+    <div class="card"><h2>Когда Desmos не нужен</h2>
+      <ul class="tight small"><li>Простая арифметика и уравнения в одно действие: в уме быстрее.</li><li>Текстовые задачи: сначала составьте уравнение на черновике, потом вводите.</li><li>Вопросы о смысле числа в формуле («что означает 12 в модели»): здесь нужно читать, а не считать.</li><li>Геометрия с рисунком: Desmos помогает только посчитать.</li></ul>
+    </div>
+    <div class="card"><h2>Частые ошибки</h2>
+      <ul class="tight small"><li>Забытые скобки: <span class="fx">1/2x</span> Desmos понимает как (1/2)·x. Для 1/(2x) ставьте скобки.</li><li>Ответили x, а спрашивали y, 2x или x + y. Перечитайте вопрос перед вводом ответа.</li><li>Тригонометрия не в том режиме. Гаечный ключ → Degrees или Radians. Проверяйте перед каждым sin и cos.</li><li>Переменные в задаче не x и y. Замените их на x и y, иначе Desmos предложит слайдеры.</li><li>Округление: точка (2.333, 5) означает 7/3. Если ответ нужен дробью, переведите его.</li><li>Графики пересекаются за пределами экрана. Уменьшите масштаб, прежде чем решить, что решений нет.</li></ul>
+    </div>
+  </div>
+  <div class="card"><h2>Проверьте себя</h2>
+    <p class="small muted">Решите в Desmos, потом откройте ответ.</p>
+    <div class="grid" style="margin-top:10px">
+      <details><summary>1. Решите 5x − 8 = 3x + 10</summary><p class="small">Введите <span class="fx">y=5x-8</span> и <span class="fx">y=3x+10</span>. Пересечение (9; 37). Ответ: x = 9.</p></details>
+      <details><summary>2. Система: y = 2x − 1 и y = −x + 8</summary><p class="small">Пересечение графиков: (3; 5).</p></details>
+      <details><summary>3. Найдите нули x² − 4x − 12</summary><p class="small">Введите <span class="fx">y=x^2-4x-12</span>, кликните по графику. Точки на оси x: −2 и 6.</p></details>
+      <details><summary>4. Найдите максимум y = −x² + 6x − 5</summary><p class="small">Вершина (3; 4). Максимум равен 4 при x = 3.</p></details>
+      <details><summary>5. При каком c прямая y = c имеет ровно одну общую точку с y = x² − 4x + 7?</summary><p class="small">Введите параболу и <span class="fx">y=c</span>, добавьте слайдер. Прямая касается параболы в вершине (2; 3). Ответ: c = 3.</p></details>
+    </div>
+  </div>
+</section>
+
+<section class="view" id="v-resources">
+  <div class="head"><h1>Источники</h1><span class="muted small">Сначала официальные. Их достаточно на 19 дней</span></div>
+  <div class="card" id="resList"></div>
+  <div class="card small"><b>Как пользоваться.</b> Полные тесты решайте только в Bluebook: это единственная точная копия экзамена. Темы изучайте на Khan Academy. Точечные наборы по слабому навыку берите в Question Bank с фильтром по навыку и сложности. Этот сайт хранит ваш план, баллы и ошибки.</div>
+</section>
+
+<section class="view" id="v-testday">
+  <div class="head"><h1>День экзамена</h1><span class="pill mark">5 декабря, суббота</span></div>
+  <div class="grid g2">
+    <div class="card"><h2>Чек-лист</h2><div id="checklist"></div></div>
+    <div class="card"><h2>Утро экзамена</h2>
+      <ul class="tight small"><li>Подъём за 2 часа до выезда, обычный завтрак, без экспериментов.</li><li>Приезжайте к времени, указанному в вашем билете. Опоздавших могут не допустить.</li><li>Разминка дома: 5 лёгких задач по Math и 5 по R&amp;W, не больше. Новые темы не открывать.</li><li>В перерыве встаньте, выпейте воды, съешьте перекус. Телефон не трогать: за это аннулируют результат.</li><li>Один сложный вопрос ничего не решает. Флажок и дальше.</li></ul>
+      <p class="small muted" style="margin-top:10px">Результаты ожидаются 18 декабря в аккаунте College Board.</p>
+    </div>
+  </div>
+</section>
+
+</main>
+</div>
+<script>
+(function(){
+"use strict";
+var KEY="sat-dec5-v1";
+var $=function(id){return document.getElementById(id)};
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function defaults(){return{target:1500,done:{},tests:[],errs:[],skills:{},vocab:{},check:{},act:{},best:0,ts:0}}
+var S=defaults();
+try{var raw=localStorage.getItem(KEY);if(raw)S=Object.assign(defaults(),JSON.parse(raw))}catch(e){}
+
+/* ---------- dates ---------- */
+var START=new Date(2026,10,16), EXAM=new Date(2026,11,5,7,45);
+function key(d){return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2)}
+function dayDate(i){return new Date(2026,10,16+i)}
+function fmt(d){return d.toLocaleDateString("ru-RU",{weekday:"short",day:"numeric",month:"short"})}
+function todayIdx(){var n=new Date();return Math.floor((new Date(n.getFullYear(),n.getMonth(),n.getDate())-START)/864e5)}
+
+/* ---------- plan ---------- */
+var QB="Question Bank", KA="Khan Academy", BB="Bluebook";
+var PLAN=[
+{p:"Фаза 1. Диагностика и база",t:"Старт и диагностика",test:1,k:[["Установить "+BB+", войти в аккаунт College Board, открыть "+KA,15],["Пройти полный пробный тест в "+BB+" по таймеру, без пауз и телефона",134],["Записать балл во вкладке «Пробные тесты»",5]]},
+{t:"Разбор диагностики",k:[["Разобрать каждую ошибку теста: перерешать с нуля, не глядя на ответ",60],["Записать все ошибки в журнал с причиной и выводом",30],["Отметить уровень по каждому навыку в «Карте навыков»",10]]},
+{t:"Math: Algebra + Desmos",k:[[KA+": линейные уравнения, функции, системы, неравенства",45],["Освоить Desmos: пересечение графиков, слайдеры, таблица",20],[QB+": 15 вопросов Algebra, сложность Medium и Hard",30]]},
+{t:"R&W: Standard English Conventions",k:[[KA+": Boundaries (пунктуация, границы предложений)",35],[KA+": Form, Structure, and Sense",30],[QB+": 20 вопросов Conventions по таймеру (15 минут)",25]]},
+{t:"Math: Advanced Math",k:[[KA+": квадратные уравнения, параболы, экспоненты, функции",50],[QB+": 15 вопросов Advanced Math, Medium и Hard",35],["Карточки слов: 15 штук",10]]},
+{t:"Пробный тест №2",test:1,k:[["Полный тест в "+BB+" утром, как на экзамене (начало около 08:00)",134],["Записать балл и первые ошибки в журнал",30]]},
+{t:"Глубокий разбор теста №2",k:[["Перерешать все ошибки и угаданные вопросы",70],["Обновить журнал ошибок и карту навыков",20],["Выбрать 3 самых слабых навыка на следующую неделю",10],["Мини-сет: 10 вопросов по самому слабому навыку",20]]},
+{p:"Фаза 2. Точечная работа по слабым местам",t:"R&W: Expression of Ideas",k:[[KA+": Transitions",30],[KA+": Rhetorical Synthesis",30],[QB+": 20 вопросов по обеим темам",25]]},
+{t:"Math: Problem-Solving and Data Analysis",k:[[KA+": проценты, пропорции, единицы измерения",35],[KA+": статистика, вероятность, диаграммы рассеяния",35],[QB+": 15 вопросов, Medium и Hard",30]]},
+{t:"R&W: Craft and Structure",k:[["Карточки слов: вся оставшаяся колода",15],[KA+": Words in Context, Text Structure and Purpose, Cross-Text Connections",45],[QB+": 20 вопросов по таймеру",25]]},
+{t:"Math: Geometry and Trigonometry",k:[[KA+": площадь и объём, углы, треугольники",35],[KA+": окружности, тригонометрия прямоугольного треугольника",35],[QB+": 15 вопросов, Medium и Hard",30]]},
+{t:"R&W: Information and Ideas",k:[[KA+": Central Ideas, Inferences, Command of Evidence",45],[QB+": 20 вопросов, из них 8 с графиками и таблицами",30],["Перечитать журнал ошибок по R&W",10]]},
+{t:"Пробный тест №3",test:1,k:[["Полный тест в "+BB+" утром, строго в условиях экзамена",134],["Записать балл и ошибки",30]]},
+{t:"Разбор теста №3",k:[["Перерешать все ошибки с нуля",70],["Обновить журнал и карту навыков",20],["Составить список из 3 навыков для последней недели",10]]},
+{p:"Фаза 3. Сложные модули и шлифовка",t:"Сложный модуль Math",k:[[QB+": 22 вопроса Math только Hard, таймер 35 минут",35],["Разбор ошибок, запись в журнал",30],["Блиц: 2 раунда",10]]},
+{t:"Сложный модуль R&W",k:[[QB+": 27 вопросов R&W только Hard, таймер 32 минуты",32],["Разбор ошибок, запись в журнал",30],["10 вопросов по самому слабому навыку",15]]},
+{t:"Пробный тест №4 (последний)",test:1,k:[["Полный тест в "+BB+": финальная репетиция с тем же ноутбуком, что на экзамене",134],["Записать балл",5]]},
+{t:"Разбор теста №4 и закрытие журнала",k:[["Перерешать ошибки теста №4",50],["Пройти весь журнал: перерешать всё, что не отмечено «Перерешал»",40],["Завершить Exam Setup в "+BB+" и сохранить билет",10]]},
+{t:"Лёгкий день перед экзаменом",k:[["Повторить формулы и свои выводы из журнала ошибок",30],["Собрать сумку по чек-листу «День экзамена», зарядить ноутбук",15],["Никаких тестов. Лечь спать вовремя",0]]}
+];
+var TOTAL=0;PLAN.forEach(function(d){TOTAL+=d.k.length});
+
+/* ---------- skills ---------- */
+var DOM=[
+{s:"R&W",n:"Information and Ideas",w:"≈26% секции",k:["Central Ideas and Details","Command of Evidence: Textual","Command of Evidence: Quantitative","Inferences"]},
+{s:"R&W",n:"Craft and Structure",w:"≈28% секции",k:["Words in Context","Text Structure and Purpose","Cross-Text Connections"]},
+{s:"R&W",n:"Expression of Ideas",w:"≈20% секции",k:["Rhetorical Synthesis","Transitions"]},
+{s:"R&W",n:"Standard English Conventions",w:"≈26% секции",k:["Boundaries","Form, Structure, and Sense"]},
+{s:"Math",n:"Algebra",w:"≈35% секции",k:["Linear equations in one variable","Linear functions","Linear equations in two variables","Systems of linear equations","Linear inequalities"]},
+{s:"Math",n:"Advanced Math",w:"≈35% секции",k:["Equivalent expressions","Nonlinear equations and systems","Nonlinear functions"]},
+{s:"Math",n:"Problem-Solving and Data Analysis",w:"≈15% секции",k:["Ratios, rates, proportions, units","Percentages","One-variable data","Two-variable data and scatterplots","Probability","Inference and margin of error","Evaluating statistical claims"]},
+{s:"Math",n:"Geometry and Trigonometry",w:"≈15% секции",k:["Area and volume","Lines, angles, triangles","Right triangles and trigonometry","Circles"]}
+];
+var SK={};DOM.forEach(function(d,i){d.k.forEach(function(n,j){SK[i+"-"+j]={n:n,d:d.n,s:d.s}})});
+var TYPES={c:"Не знал тему",r:"Невнимательность",t:"Время",s:"Ловушка"};
+
+/* ---------- persistence ---------- */
+var docRef=null, chain=Promise.resolve(), pushT=null;
+function setSync(m){var el=$("sync");el.className=m==="cloud"?"cloud":"";el.lastElementChild.textContent=m==="cloud"?"Сохранено в аккаунте Claude":m==="err"?"Облако недоступно, данные на устройстве":"Сохраняется на этом устройстве"}
+function saveLocal(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function push(){if(!docRef)return;var body={json:JSON.stringify(S),ts:S.ts};chain=chain.then(function(){return docRef.set(body)}).then(function(){setSync("cloud")}).catch(function(){setSync("err")})}
+function save(act){S.ts=Date.now();if(act){var k=key(new Date());S.act[k]=(S.act[k]||0)+1}saveLocal();render();if(docRef){clearTimeout(pushT);pushT=setTimeout(push,1200)}}
+async function initCloud(){
+  try{
+    if(!window.claude||!window.claude.use)return;
+    var r=await Promise.all([window.claude.use("db"),window.claude.use("user")]);
+    if(!r[0]||!r[1])return;
+    var id=await r[1].id(); if(!id)return;
+    var ref=r[0].doc("data/users/"+id+"/state");
+    var snap=await Promise.race([ref.get(),new Promise(function(_,rej){setTimeout(function(){rej(new Error("timeout"))},10000)})]);
+    docRef=ref;
+    var remote=null;
+    if(snap.exists){var b=snap.data();if(b&&b.json){try{remote=JSON.parse(b.json)}catch(e){}}}
+    if(remote&&(remote.ts||0)>(S.ts||0)){S=Object.assign(defaults(),remote);saveLocal();render();setSync("cloud")}
+    else if(S.ts>0&&(!remote||(remote.ts||0)<S.ts)){push()}
+    else setSync("cloud");
+  }catch(e){setSync("local")}
+}
+
+/* ---------- derived ---------- */
+function latest(){if(!S.tests.length)return null;var t=S.tests.slice().sort(function(a,b){return a.d<b.d?-1:1});return t[t.length-1]}
+function streak(){var n=0,d=new Date();if(!S.act[key(d)])d.setDate(d.getDate()-1);while(S.act[key(d)]){n++;d.setDate(d.getDate()-1)}return n}
+function doneCount(){var n=0;PLAN.forEach(function(d,i){d.k.forEach(function(_,j){if(S.done[i+"-"+j])n++})});return n}
+function errBySkill(){var m={};S.errs.forEach(function(e){if(!e.f)m[e.k]=(m[e.k]||0)+1});return Object.keys(m).map(function(k){return[k,m[k]]}).sort(function(a,b){return b[1]-a[1]})}
+
+/* ---------- renderers ---------- */
+function tasksHtml(i){var d=PLAN[i];return d.k.map(function(t,j){var id=i+"-"+j,on=!!S.done[id];return '<div class="task'+(on?" done":"")+'"><input type="checkbox" id="k'+id+'" data-task="'+id+'"'+(on?" checked":"")+'><label for="k'+id+'">'+esc(t[0])+'</label>'+(t[1]?'<span class="min">'+t[1]+' мин</span>':"")+'</div>'}).join("")}
+function renderToday(){
+  var now=new Date(), ti=todayIdx();
+  $("todayDate").textContent=fmt(now);
+  var ms=EXAM-now, days=Math.ceil(ms/864e5);
+  $("tLeft").textContent=ms<=0?"Экзамен":days+" "+(days%10===1&&days!==11?"день":(days%10>=2&&days%10<=4&&(days<10||days>20)?"дня":"дней"));
+  var L=latest(); $("tScore").textContent=L?L.rw+L.m:"—"; $("tTarget").textContent=S.target;
+  $("tGap").textContent=L?(S.target-(L.rw+L.m)>0?"осталось набрать "+(S.target-(L.rw+L.m)):"цель достигнута на пробном"):"пройдите диагностику";
+  $("tStreak").textContent=streak();
+  var pct=Math.round(doneCount()/TOTAL*100); $("tPct").textContent=pct+"%"; $("tBar").style.width=pct+"%";
+  if(ti<0){$("todayTitle").textContent="План начинается 16 ноября";$("todayTasks").innerHTML=tasksHtml(0)}
+  else if(ti>=PLAN.length){$("todayTitle").textContent=ti===PLAN.length?"Сегодня экзамен. Удачи!":"Экзамен позади";$("todayTasks").innerHTML='<p class="muted">Откройте вкладку «День экзамена».</p>'}
+  else{$("todayTitle").textContent="День "+(ti+1)+". "+PLAN[ti].t;$("todayTasks").innerHTML=tasksHtml(ti)}
+  var w=errBySkill().slice(0,4), wh="";
+  if(w.length){var mx=w[0][1];wh=w.map(function(x){return '<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;gap:8px"><span>'+esc(SK[x[0]].n)+'</span><span class="num">'+x[1]+'</span></div><div class="bar"><i style="width:'+Math.round(x[1]/mx*100)+'%;background:var(--bad)"></i></div></div>'}).join("")+'<p class="muted">Следующий свободный блок: '+QB+' → фильтр «'+esc(SK[w[0][0]].n)+'» → 10 вопросов.</p>'}
+  else wh='<p class="muted">Пока нет данных. После диагностики запишите ошибки в журнал, и здесь появятся ваши слабые навыки.</p>';
+  var A=accAll(),low=Object.keys(S.st||{}).filter(function(k){return S.st[k][1]>=2&&SK[k]}).sort(function(a,b){return S.st[a][0]/S.st[a][1]-S.st[b][0]/S.st[b][1]}).slice(0,4).filter(function(k){return S.st[k][0]<S.st[k][1]});
+  if(A.t)wh='<p style="margin-bottom:8px">Точность: <b class="num">'+Math.round(A.r/A.t*100)+'%</b> · решено <b class="num">'+A.t+'</b> · в очереди повторения <b class="num">'+(S.rq||[]).length+'</b></p>'+low.map(function(k){return '<div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:4px"><span>'+esc(SK[k].n)+'</span><span class="pill bad num">'+S.st[k][0]+"/"+S.st[k][1]+'</span></div>'}).join("")+(S.errs.length?wh:"");
+  $("weak").innerHTML=wh;
+  var c="";for(var i=0;i<20;i++){var d=dayDate(i),a=S.act[key(d)]||0;c+='<div class="'+(a>=4?"a2":a>0?"a1":"")+(i===ti?" now":"")+'" title="'+fmt(d)+": "+a+'">'+d.getDate()+'</div>'}
+  $("cal").innerHTML=c;
+  if(document.activeElement!==$("target"))$("target").value=S.target;
+  var adv="Цель по умолчанию 1500. Измените её под требования ваших вузов.";
+  if(L){var gr=800-L.rw,gm=800-L.m;adv=gr+gm===0?"Максимум на пробном. Держите форму.":"Запас роста: R&W "+gr+", Math "+gm+". Отдавайте примерно "+Math.round(gm/(gr+gm)*100)+"% времени Math и "+Math.round(gr/(gr+gm)*100)+"% R&W."}
+  $("advice").textContent=adv;
+}
+function renderPlan(){
+  var ti=todayIdx(),h="";
+  PLAN.forEach(function(d,i){
+    if(d.p)h+='<div class="phase">'+esc(d.p)+'</div>';
+    var n=0;d.k.forEach(function(_,j){if(S.done[i+"-"+j])n++});
+    var full=n===d.k.length;
+    h+='<div class="card day'+(i===ti?" today":"")+(full?" full":d.test?" test":"")+'"><div class="dayhead"><span class="pill num">'+fmt(dayDate(i))+'</span><h3>День '+(i+1)+". "+esc(d.t)+'</h3>'+(d.test?'<span class="pill">полный тест</span>':"")+(i===ti?'<span class="pill mark">сегодня</span>':"")+(full?'<span class="pill good">готово</span>':'<span class="pill num">'+n+"/"+d.k.length+'</span>')+'</div>'+tasksHtml(i)+'</div>';
+  });
+  h+='<div class="card day test"><div class="dayhead"><span class="pill num">'+fmt(new Date(2026,11,5))+'</span><h3>Экзамен SAT</h3><span class="pill mark">07:45</span></div><p class="small muted">Сверьте время и адрес по своему билету в Bluebook.</p></div>';
+  $("plan").innerHTML=h;
+}
+function renderTests(){
+  var t=S.tests.slice().sort(function(a,b){return a.d<b.d?-1:1});
+  $("testRows").innerHTML=t.length?t.map(function(x){return '<tr><td class="num">'+esc(x.d)+'</td><td>'+esc(x.s||"")+'</td><td class="num">'+x.rw+'</td><td class="num">'+x.m+'</td><td class="num"><b>'+(x.rw+x.m)+'</b></td><td><button class="ghost" data-deltest="'+x.id+'" aria-label="Удалить тест">Удалить</button></td></tr>'}).join(""):'<tr><td colspan="6" class="muted">Тестов пока нет. Первый тест — диагностика в первый день плана.</td></tr>';
+  var W=640,H=240,L=46,R=16,T=16,B=30,lo=400,hi=1600;
+  if(t.length){var mn=Math.min.apply(null,t.map(function(x){return x.rw+x.m}).concat([S.target]));lo=Math.max(400,Math.floor((mn-100)/100)*100)}
+  var y=function(v){return T+(H-T-B)*(1-(v-lo)/(hi-lo))}, x=function(i){return t.length<2?(L+W-R)/2:L+(W-L-R)*i/(t.length-1)};
+  var s="";for(var g=lo;g<=hi;g+=(hi-lo)/4){s+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y(g)+'" y2="'+y(g)+'" stroke="var(--line)"/><text x="'+(L-8)+'" y="'+(y(g)+4)+'" text-anchor="end">'+Math.round(g)+'</text>'}
+  s+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y(S.target)+'" y2="'+y(S.target)+'" stroke="var(--warn)" stroke-dasharray="6 5" stroke-width="2"/><text x="'+(W-R)+'" y="'+(y(S.target)-6)+'" text-anchor="end" style="fill:var(--warn)">цель '+S.target+'</text>';
+  if(t.length){
+    var pts=t.map(function(v,i){return x(i)+","+y(v.rw+v.m)});
+    if(t.length>1)s+='<polygon points="'+x(0)+","+y(lo)+" "+pts.join(" ")+" "+x(t.length-1)+","+y(lo)+'" fill="var(--accent)" opacity=".1"/><polyline points="'+pts.join(" ")+'" fill="none" stroke="var(--accent)" stroke-width="2.5"/>';
+    t.forEach(function(v,i){var last=i===t.length-1;s+='<circle cx="'+x(i)+'" cy="'+y(v.rw+v.m)+'" r="'+(last?6:4)+'" fill="var(--accent)" stroke="var(--surface)" stroke-width="2"/><text x="'+x(i)+'" y="'+(y(v.rw+v.m)-12)+'" text-anchor="middle" style="fill:var(--ink);font-weight:700">'+(v.rw+v.m)+'</text><text x="'+x(i)+'" y="'+(H-8)+'" text-anchor="middle">'+esc(v.d.slice(8)+"."+v.d.slice(5,7))+'</text>'});
+  }else s+='<text x="'+(W/2)+'" y="'+(H/2)+'" text-anchor="middle">Здесь появится график после первого теста</text>';
+  $("chart").innerHTML=s;
+}
+function bars(el,rows,color){
+  if(!rows.length){el.innerHTML='<p class="small muted">Пока пусто.</p>';return}
+  var mx=Math.max.apply(null,rows.map(function(r){return r[1]}));
+  el.innerHTML=rows.map(function(r){return '<div class="small"><div style="display:flex;justify-content:space-between;gap:8px"><span>'+esc(r[0])+'</span><span class="num">'+r[1]+'</span></div><div class="bar"><i style="width:'+Math.round(r[1]/mx*100)+'%;background:'+color+'"></i></div></div>'}).join("");
+}
+function renderErrors(){
+  bars($("errBars"),errBySkill().slice(0,8).map(function(x){return[SK[x[0]].n,x[1]]}),"var(--bad)");
+  var m={};S.errs.forEach(function(e){m[e.y]=(m[e.y]||0)+1});
+  bars($("errTypes"),Object.keys(m).map(function(k){return[TYPES[k],m[k]]}).sort(function(a,b){return b[1]-a[1]}),"var(--warn)");
+  $("errRows").innerHTML=S.errs.length?S.errs.slice().reverse().map(function(e){return '<tr><td>'+esc(SK[e.k]?SK[e.k].n:"")+'<div class="small muted">'+esc(SK[e.k]?SK[e.k].s:"")+'</div></td><td><span class="pill '+(e.y==="c"?"bad":"warn")+'">'+TYPES[e.y]+'</span></td><td>'+esc(e.n)+'</td><td><input type="checkbox" data-fix="'+e.id+'"'+(e.f?" checked":"")+' aria-label="Перерешал"></td><td><button class="ghost" data-delerr="'+e.id+'">Удалить</button></td></tr>'}).join(""):'<tr><td colspan="5" class="muted">Журнал пуст. Записывайте сюда каждую ошибку после теста или набора вопросов.</td></tr>';
+}
+function renderSkills(){
+  $("skills").innerHTML=DOM.map(function(d,i){
+    var sum=0;d.k.forEach(function(_,j){sum+=S.skills[i+"-"+j]||0});
+    var pct=Math.round(sum/(d.k.length*3)*100);
+    return '<div class="card"><div class="dayhead"><span class="pill">'+d.s+'</span><h3>'+esc(d.n)+'</h3><span class="muted small">'+d.w+'</span></div><div class="bar" style="margin:6px 0 8px"><i style="width:'+pct+'%;background:'+(pct>=67?"var(--good)":pct>=34?"var(--warn)":"var(--bad)")+'"></i></div>'+d.k.map(function(n,j){var id=i+"-"+j,v=S.skills[id]||0;var a=(S.st||{})[id];return '<div class="skill"><span class="small">'+esc(n)+(a?' <span class="pill num '+(a[0]/a[1]>=.8?"good":a[0]/a[1]>=.6?"warn":"bad")+'">'+a[0]+"/"+a[1]+'</span>':"")+'</span><span class="rate">'+[0,1,2,3].map(function(r){return '<button data-rate="'+id+":"+r+'" class="'+(v===r?"on":"")+'" aria-label="Уровень '+r+'">'+r+'</button>'}).join("")+'</span></div>'}).join("")+'</div>';
+  }).join("");
+}
+var CHECK=["Bluebook обновлён на ноутбуке, который беру на экзамен","Exam Setup в Bluebook завершён (доступен за 1–5 дней до экзамена)","Билет (admission ticket) распечатан или сохранён в телефоне","Паспорт или удостоверение личности с фото, то же имя, что в регистрации","Ноутбук заряжен на 100%, зарядка в сумке","Ручка или карандаш для черновика","Свой калькулятор по желанию (Desmos есть в Bluebook)","Вода и перекус на перерыв","Маршрут до центра проверен, выезд с запасом 30 минут","Будильник и запасной будильник"];
+function renderCheck(){$("checklist").innerHTML=CHECK.map(function(t,i){var on=!!S.check[i];return '<div class="task'+(on?" done":"")+'"><input type="checkbox" id="c'+i+'" data-check="'+i+'"'+(on?" checked":"")+'><label for="c'+i+'">'+esc(t)+'</label></div>'}).join("")}
+function render(){renderToday();renderPlan();renderTests();renderErrors();renderSkills();renderCheck();bankDraw();if(typeof MINI!=="undefined"&&MINI)miniList();if(typeof DES!=="undefined"&&DES)renderDesmos();$("bzBest").textContent=S.best||0;vcStat()}
+
+/* ---------- resources ---------- */
+var RES=[
+["Bluebook","https://bluebook.collegeboard.org/","Официальное приложение экзамена. Полные адаптивные пробные тесты, тот же интерфейс и Desmos. Используйте для всех четырёх тестов плана.","официальный"],
+["Khan Academy: SAT Math","https://www.khanacademy.org/test-prep/v2-sat-math","Официальный партнёр College Board. Уроки и упражнения по каждому навыку Math, бесплатно.","официальный"],
+["Khan Academy: SAT Reading and Writing","https://www.khanacademy.org/test-prep/sat-reading-and-writing","Уроки и упражнения по каждому типу вопросов R&W.","официальный"],
+["SAT Suite Question Bank","https://satsuitequestionbank.collegeboard.org/","Тысячи официальных вопросов с фильтром по навыку и сложности. Главный источник для точечной работы.","официальный"],
+["Desmos для SAT","https://www.desmos.com/testing/cb-digital-sat/graphing","Точная копия калькулятора с экзамена. Тренируйте приёмы из вкладки «Тактика».","официальный"],
+["My Practice","https://mypractice.collegeboard.org/","Разбор ваших тестов Bluebook: ответы, объяснения, статистика по навыкам.","официальный"],
+["SAT Practice: обзор College Board","https://satsuite.collegeboard.org/practice","Все официальные материалы в одном месте.","официальный"],
+["Что взять на экзамен","https://satsuite.collegeboard.org/sat/what-to-bring-do","Официальные правила дня экзамена и список разрешённых устройств.","официальный"],
+["1609SAT","https://www.1609sat.com/app","Банк вопросов, блиц, очередь повторения и слова. Удобно для ежедневных наборов. Полные тесты там платные.","дополнительно"],
+["OnePrep","https://oneprep.xyz/","Удобный интерфейс для вопросов из официального банка с отслеживанием решённого.","дополнительно"],
+["YouTube: приёмы Desmos для SAT","https://www.youtube.com/results?search_query=desmos+digital+sat+tricks","Посмотрите одно видео на 20–30 минут в день 3 плана.","дополнительно"],
+["The Critical Reader (Erica Meltzer)","https://thecriticalreader.com/","Лучшие книги по грамматике и чтению SAT. Платно, берите только если R&W сильно отстаёт.","платно"]
+];
+$("resList").innerHTML=RES.map(function(r){return '<div class="res"><div><a href="'+r[1]+'" target="_blank" rel="noopener"><b>'+esc(r[0])+'</b></a> <span class="pill '+(r[3]==="официальный"?"good":r[3]==="платно"?"warn":"")+'">'+r[3]+'</span></div><span class="small muted">'+esc(r[2])+'</span></div>'}).join("");
+
+/* ---------- forms and clicks ---------- */
+$("efSkill").innerHTML=DOM.map(function(d,i){return '<optgroup label="'+d.s+": "+esc(d.n)+'">'+d.k.map(function(n,j){return '<option value="'+i+"-"+j+'">'+esc(n)+'</option>'}).join("")+'</optgroup>'}).join("");
+$("tfDate").value=key(new Date());
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+$("testForm").addEventListener("submit",function(e){e.preventDefault();var rw=+$("tfRW").value,m=+$("tfM").value;if(!(rw>=200&&rw<=800&&m>=200&&m<=800))return;S.tests.push({id:uid(),d:$("tfDate").value,rw:rw,m:m,s:$("tfSrc").value.trim().slice(0,40)});$("tfRW").value="";$("tfM").value="";$("tfSrc").value="";save(true)});
+$("errForm").addEventListener("submit",function(e){e.preventDefault();var n=$("efNote").value.trim();if(!n)return;S.errs.push({id:uid(),k:$("efSkill").value,y:$("efType").value,n:n.slice(0,300),f:false});$("efNote").value="";save(true)});
+$("saveTarget").addEventListener("click",function(){var v=Math.round(+$("target").value/10)*10;if(v>=400&&v<=1600){S.target=v;save(false)}});
+document.addEventListener("change",function(e){
+  var t=e.target,d=t.dataset;
+  if(d.task){if(t.checked)S.done[d.task]=1;else delete S.done[d.task];save(t.checked)}
+  else if(d.check){if(t.checked)S.check[d.check]=1;else delete S.check[d.check];save(false)}
+  else if(d.fix){S.errs.forEach(function(x){if(x.id===d.fix)x.f=t.checked});save(t.checked)}
+});
+document.addEventListener("click",function(e){
+  var t=e.target.closest("button");if(!t)return;var d=t.dataset;
+  if(d.rate){var p=d.rate.split(":");S.skills[p[0]]=+p[1];save(false)}
+  else if(d.deltest){S.tests=S.tests.filter(function(x){return x.id!==d.deltest});save(false)}
+  else if(d.delerr){S.errs=S.errs.filter(function(x){return x.id!==d.delerr});save(false)}
+});
+
+/* ---------- module timer ---------- */
+var tm={left:1920,total:1920,q:27,run:false,h:null};
+function tmDraw(){var m=Math.floor(tm.left/60),s=tm.left%60;$("tmClock").textContent=("0"+m).slice(-2)+":"+("0"+s).slice(-2);var el=tm.total-tm.left;$("tmPace").textContent=tm.left<=0?"Время вышло. Запишите ошибки в журнал.":el===0?"Темп: около "+Math.round(tm.total/tm.q)+" секунд на вопрос":"По графику вы должны быть на вопросе "+Math.min(tm.q,Math.floor(el/(tm.total/tm.q))+1)+" из "+tm.q}
+function tmSet(){var p=$("tmMode").value.split(",");tm.total=tm.left=p[0]*60;tm.q=+p[1];tmStop();tmDraw()}
+function tmStop(){tm.run=false;clearInterval(tm.h);$("tmStart").textContent="Старт"}
+$("tmMode").addEventListener("change",tmSet);
+$("tmReset").addEventListener("click",tmSet);
+$("tmStart").addEventListener("click",function(){
+  if(tm.run){tmStop();return}
+  if(tm.left<=0)tmSet();
+  tm.run=true;$("tmStart").textContent="Пауза";var end=Date.now()+tm.left*1000;
+  tm.h=setInterval(function(){tm.left=Math.max(0,Math.round((end-Date.now())/1000));tmDraw();if(tm.left<=0)tmStop()},500);
+});
+
+/* ---------- blitz ---------- */
+function ri(a,b){return a+Math.floor(Math.random()*(b-a+1))}
+var GEN=[
+function(){var a=ri(2,9),x=ri(-9,12),b=ri(-15,15);return["Решите: "+a+"x "+(b<0?"− "+(-b):"+ "+b)+" = "+(a*x+b)+". Найдите x.",x]},
+function(){var p=[5,10,15,20,25,30,40,60,75][ri(0,8)],n=ri(2,20)*20;return["Сколько будет "+p+"% от "+n+"?",p*n/100]},
+function(){var m=ri(-5,6)||2,x1=ri(-4,4),dx=ri(1,5),y1=ri(-6,6);return["Наклон прямой через ("+x1+"; "+y1+") и ("+(x1+dx)+"; "+(y1+m*dx)+")?",m]},
+function(){var r1=ri(-8,8),r2=ri(-8,8),b=-(r1+r2),c=r1*r2;return["Сумма корней: x² "+(b<0?"− "+(-b):"+ "+b)+"x "+(c<0?"− "+(-c):"+ "+c)+" = 0",r1+r2]},
+function(){var n=ri(4,5),m=ri(6,30),a=[],s=0;for(var i=0;i<n-1;i++){var v=m+ri(-5,5);a.push(v);s+=v}a.push(m*n-s);return["Среднее чисел: "+a.join(", "),m]},
+function(){var o=ri(2,10)*10,p=[10,20,25,50,-10,-20,-25,-50][ri(0,7)];return["Было "+o+", стало "+(o*(100+p)/100)+". Изменение в процентах (со знаком)?",p]},
+function(){var x=ri(-6,12),y=ri(-6,12);return["x + y = "+(x+y)+", x − y = "+(x-y)+". Найдите x.",x]},
+function(){var a=ri(2,7),b=ri(2,7),k=ri(2,5);return["("+k+"^"+a+") · ("+k+"^"+b+") = "+k+"^n. Найдите n.",a+b]},
+function(){var a=[3,5,6,8,9,12][ri(0,5)],t=[[3,4,5],[5,12,13],[8,15,17]][ri(0,2)],k=ri(1,3);return["Катеты "+t[0]*k+" и "+t[1]*k+". Гипотенуза?",t[2]*k]}
+];
+var bz={on:false,lives:3,score:0,ans:null,left:20,h:null};
+function bzDraw(){$("bzLives").textContent="♥".repeat(bz.lives)+"♡".repeat(3-bz.lives);$("bzScore").textContent=bz.score;$("bzTime").textContent=bz.left}
+function bzNext(){var g=GEN[ri(0,GEN.length-1)]();$("bzQ").textContent=g[0];bz.ans=g[1];bz.left=20;$("bzA").value="";$("bzA").focus();bzDraw()}
+function bzMiss(msg){bz.lives--;$("bzMsg").textContent=msg+" Верный ответ: "+bz.ans+".";$("bzMsg").style.color="var(--bad)";if(bz.lives<=0)bzEnd();else bzNext()}
+function bzEnd(){bz.on=false;clearInterval(bz.h);bzDraw();$("bzGo").textContent="Начать";$("bzQ").textContent="Раунд окончен. Счёт: "+bz.score+".";if(bz.score>(S.best||0))S.best=bz.score;save(bz.score>0)}
+$("bzForm").addEventListener("submit",function(e){
+  e.preventDefault();
+  if(!bz.on){bz.on=true;bz.lives=3;bz.score=0;$("bzGo").textContent="Ответить";$("bzMsg").textContent="";clearInterval(bz.h);bz.h=setInterval(function(){bz.left--;if(bz.left<=0)bzMiss("Время вышло.");else bzDraw()},1000);bzNext();return}
+  var v=parseFloat($("bzA").value.replace(",",".").replace("−","-"));
+  if(isNaN(v))return;
+  if(Math.abs(v-bz.ans)<1e-9){bz.score++;$("bzMsg").textContent="Верно.";$("bzMsg").style.color="var(--good)";bzNext()}else bzMiss("Неверно.");
+});
+
+/* ---------- vocab ---------- */
+var V=[["ambivalent","испытывающий противоречивые чувства"],["pragmatic","практичный, прагматичный"],["substantiate","подтверждать доказательствами"],["undermine","подрывать, ослаблять"],["corroborate","подтверждать, подкреплять"],["ubiquitous","вездесущий, повсеместный"],["mitigate","смягчать, уменьшать"],["nuanced","тонкий, с оттенками"],["tenuous","слабый, шаткий"],["ephemeral","мимолётный, недолговечный"],["advocate","выступать за; сторонник"],["scrutinize","тщательно изучать"],["anomaly","аномалия, отклонение"],["conventional","общепринятый, традиционный"],["disparate","совершенно разные, несхожие"],["empirical","основанный на опыте, эмпирический"],["feasible","осуществимый"],["hinder","мешать, препятствовать"],["implicit","подразумеваемый, неявный"],["inherent","присущий, неотъемлемый"],["novel","новый, оригинальный"],["obsolete","устаревший"],["plausible","правдоподобный"],["prevalent","распространённый"],["profound","глубокий, значительный"],["refute","опровергать"],["reluctant","делающий неохотно"],["speculate","предполагать, строить догадки"],["subtle","едва заметный, тонкий"],["tentative","предварительный, неуверенный"],["underscore","подчёркивать"],["viable","жизнеспособный, осуществимый"],["bolster","поддерживать, укреплять"],["concede","признавать, уступать"],["contend","утверждать; бороться"],["deviate","отклоняться"],["elicit","вызывать (реакцию, ответ)"],["exacerbate","усугублять"],["indifferent","безразличный"],["meticulous","скрупулёзный, тщательный"],["preclude","исключать, делать невозможным"],["proliferate","быстро распространяться"],["replicate","воспроизводить, повторять"],["resilient","стойкий, быстро восстанавливающийся"],["skeptical","скептический"],["unprecedented","беспрецедентный"],["yield","давать (результат); уступать"],["abundant","обильный"],["discern","различать, распознавать"],["attribute","приписывать; свойство"],["compelling","убедительный"],["constrain","ограничивать"],["diminish","уменьшать(ся)"],["foster","способствовать, поощрять"],["impede","затруднять, препятствовать"],["reconcile","примирять, согласовывать"],["supplant","вытеснять, заменять"],["transient","временный, преходящий"],["wary","настороженный"],["allude","намекать, ссылаться"]];
+var vc=-1;
+function vcStat(){var k=0;V.forEach(function(w){if(S.vocab[w[0]])k++});$("vcStat").textContent="Выучено "+k+" из "+V.length}
+function vcNext(){var pool=[];V.forEach(function(w,i){if(!S.vocab[w[0]]&&i!==vc)pool.push(i)});if(!pool.length){var left=V.some(function(w){return!S.vocab[w[0]]});if(!left){$("vcWord").textContent="Колода пройдена";$("vcBack").textContent="Все слова отмечены как выученные.";vc=-1;return}pool=[vc]}vc=pool[ri(0,pool.length-1)];$("vcWord").textContent=V[vc][0];$("vcBack").textContent="Вспомните значение, потом откройте перевод."}
+$("vcShow").addEventListener("click",function(){if(vc>=0)$("vcBack").textContent=V[vc][1]});
+$("vcNo").addEventListener("click",function(){if(vc>=0)$("vcBack").textContent=V[vc][1];setTimeout(vcNext,1200)});
+$("vcYes").addEventListener("click",function(){if(vc<0)return;S.vocab[V[vc][0]]=1;save(true);vcNext()});
+$("vcReset").addEventListener("click",function(){S.vocab={};save(false);vcNext()});
+
+/* ---------- desmos guide ---------- */
+var DES=[
+["Уравнение с одной переменной","Любое уравнение, где нужно найти x.",["Введите левую часть как y = …","Во второй строке введите правую часть как y = …","Кликните по точке пересечения. Координата x и есть ответ."],"3x + 7 = 22 → строки y=3x+7 и y=22 → пересечение (5; 22) → x = 5. Быстрее: введите 3x+7=22 одной строкой, Desmos нарисует вертикальную линию x = 5."],
+["Система двух уравнений","Два уравнения с x и y.",["Введите первое уравнение как есть, приводить к y = … не нужно.","Введите второе уравнение.","Кликните по точке пересечения: это пара (x; y)."],"2x + 3y = 12 и x − y = 1 → пересечение (3; 2)."],
+["Сколько решений у системы","Вопросы «no solution», «infinitely many solutions».",["Введите оба уравнения.","Пересекаются в одной точке: одно решение.","Параллельны: решений нет. Полностью совпали: решений бесконечно много."],"y = 2x + 1 и y = 2x − 3 параллельны → решений нет."],
+["Нули и вершина параболы","Корни, минимум, максимум, пересечение с осями.",["Введите y = квадратное выражение.","Кликните по графику.","Серые точки на оси x — корни, верхняя или нижняя точка — вершина, точка на оси y — свободный член."],"y = x² − 5x + 6 → корни 2 и 3, вершина (2.5; −0.25)."],
+["Неизвестная константа и слайдер","«При каком k уравнение имеет одно решение / система не имеет решений».",["Введите уравнения с буквой k.","Нажмите кнопку add slider: k.","Двигайте слайдер, пока графики не выполнят условие. Для точности впишите значение k вручную."],"y = x² + k и y = 2x касаются при k = 1: одно решение."],
+["Эквивалентные выражения","«Which expression is equivalent to…».",["Введите исходное выражение как y = …","По очереди вводите варианты ответа как y = …","Вариант, график которого полностью лёг на исходный, и есть ответ."],"y = (x + 3)² − 4 совпадает с y = x² + 6x + 5."],
+["Значение функции","Найти f(4), f(g(2)), значение выражения.",["Введите f(x) = …","В новой строке введите f(4).","Ответ появится справа в строке."],"f(x) = 2x² − 3, f(4) = 29."],
+["Неравенства","Какая точка является решением системы неравенств.",["Введите неравенства со знаками <, >, <=, >=.","Desmos закрасит области решений.","Введите точку из варианта ответа в скобках, например (2,5). Она должна лежать в области, где закраски накладываются."],"y > 2x + 1 и y < −x + 8: точка (1; 5) подходит."],
+["Таблица и линия по точкам","Даны точки или таблица, нужно уравнение прямой или модель.",["Нажмите + → table и введите значения x и y.","В новой строке введите y1 ~ mx1 + b.","Desmos покажет m и b. Для экспоненты введите y1 ~ a*b^x1."],"Точки (1; 5), (2; 8), (3; 11) → m = 3, b = 2."],
+["Статистика","Среднее, медиана набора чисел.",["Введите mean( … ) с числами через запятую.","Для медианы введите median( … ).","Сравните результат с вариантами."],"mean(4, 8, 9, 15) = 9, median(4, 8, 9, 15) = 8.5."],
+["Окружность","Уравнение окружности в раскрытом виде, нужен центр или радиус.",["Введите уравнение как есть.","Введите вариант ответа в виде (x − h)² + (y − k)² = r².","Если окружности совпали, центр (h; k) и радиус r найдены."],"x² + y² − 6x + 4y = 12 совпадает с (x − 3)² + (y + 2)² = 25: центр (3; −2), радиус 5."],
+["Тригонометрия и вычисления","sin, cos, tan, проценты, длинная арифметика.",["Нажмите на гаечный ключ и выберите Degrees или Radians.","Введите выражение, например sin(30).","Для процентов считайте напрямую: 0.15*240."],"В градусах sin(30) = 0.5. В радианах тот же ввод даст другое число."]
+];
+$("dsList").innerHTML=DES.map(function(d,i){return '<div class="card"><div class="dayhead"><span class="pill num">'+(i+1)+'</span><h3>'+esc(d[0])+'</h3></div><p class="small muted">Когда: '+esc(d[1])+'</p><ol class="steps small">'+d[2].map(function(s){return "<li>"+esc(s)+"</li>"}).join("")+'</ol><div class="ex"><b>Пример.</b> '+esc(d[3])+'</div><div class="task" style="margin-top:8px"><input type="checkbox" id="ds'+i+'" data-check="d'+i+'"><label for="ds'+i+'">Повторил в Desmos, приём освоен</label></div></div>'}).join("");
+function renderDesmos(){var n=0;DES.forEach(function(_,i){var on=!!S.check["d"+i];if(on)n++;$("ds"+i).checked=on});$("dsStat").textContent="Освоено приёмов: "+n+" из "+DES.length}
+
+/* ---------- mini tests (original questions in Digital SAT format) ---------- */
+var B="______";
+var MINI=[
+{id:"rw1",t:"R&W · Модуль 1",lvl:"средний",min:12,q:[
+{k:"1-0",p:"Marine biologist Dr. Lena Ortiz noted that the coral colonies she studied were surprisingly "+B+": after a severe bleaching event, most of them recovered their color and resumed growth within two years.",q:"Which choice completes the text with the most logical and precise word or phrase?",c:["fragile","resilient","uniform","obscure"],a:1,e:"Кораллы восстановились после стресса. Это значение слова resilient (стойкий)."},
+{k:"1-0",p:"The committee's early estimate of the bridge's cost was only "+B+"; the members expected to revise the figure once engineers completed a full survey.",q:"Which choice completes the text with the most logical and precise word or phrase?",c:["tentative","definitive","excessive","irrelevant"],a:0,e:"Цифру собирались пересматривать, значит оценка предварительная: tentative."},
+{k:"1-1",p:"For decades, historians assumed that the medieval trading town of Varsen declined because of a single catastrophic flood. Recent analysis of tax records, however, shows that merchants had been leaving the town for at least thirty years before the flood occurred. The flood, it seems, merely completed a process already under way.",q:"Which choice best describes the function of the second sentence in the text as a whole?",c:["It presents evidence that complicates a long-held explanation.","It summarizes the view that historians have traditionally held.","It describes the method used to determine the date of the flood.","It offers a personal anecdote about the town's merchants."],a:0,e:"Слово however вводит данные, которые противоречат старому объяснению из первого предложения."},
+{k:"0-0",p:"Researchers in a mid-sized city compared bee populations in community gardens with those in nearby farmland. They found more bee species in the gardens, which contained a wide variety of flowering plants that bloomed at different times of year, than in the farmland, where a single crop flowered for only a few weeks.",q:"Which choice best states the main idea of the text?",c:["Community gardens should replace farmland near cities.","Bees prefer cities because urban areas are warmer than rural ones.","Urban gardens may support more diverse bee populations than single-crop farmland because they offer varied food sources over a longer period.","Farmland near cities no longer supports any bee species."],a:2,e:"Главная мысль: в садах видов больше из-за разнообразия и длительного цветения. Остальные варианты выходят за рамки текста."},
+{k:"0-1",p:"A psychologist hypothesizes that people remember information better when they explain it aloud to someone else than when they simply reread it.",q:"Which finding, if true, would most directly support the psychologist's hypothesis?",c:["Participants who reread a passage reported enjoying the task more than those who explained it.","Participants who explained a passage to a partner scored higher on a later recall test than participants who reread the passage.","Participants in both groups spent the same amount of time studying.","Most participants said they usually prefer to study alone."],a:1,e:"Гипотеза о запоминании. Её подтверждает только сравнение результатов теста на запоминание между двумя группами."},
+{k:"0-2",p:"A transit analyst claims that the city's 2022 fare reduction did not increase ridership on every line.",tb:[["Line","2021","2023"],["A","42","57"],["B","38","36"],["C","25","31"]],cap:"Average daily ridership (thousands)",q:"Which choice most effectively uses data from the table to support the analyst's claim?",c:["Ridership on Line A rose from 42 thousand in 2021 to 57 thousand in 2023.","Line C had the lowest ridership in both 2021 and 2023.","Ridership on Line B fell from 38 thousand in 2021 to 36 thousand in 2023.","Line A had the highest ridership of the three lines in 2023."],a:2,e:"Нужен пример линии, где пассажиров не стало больше. Это линия B: 38 → 36."},
+{k:"0-3",p:"Glassmakers in ancient Roman workshops often recycled broken glass, melting it together with fresh raw materials. Because recycled glass from different sources was mixed, the chemical signature of a finished object may not match any single source of raw material. Therefore, archaeologists who use chemical analysis to trace a Roman glass object to its place of manufacture "+B,q:"Which choice most logically completes the text?",c:["can be certain that the object was made only from fresh materials.","should be cautious, since the object's signature may reflect a blend of sources.","will find that recycled glass is stronger than new glass.","should stop using chemical analysis altogether."],a:1,e:"Из текста следует только осторожность: состав может быть смесью. Вариант «отказаться совсем» слишком крайний."},
+{k:"3-0",p:"The axolotl, a salamander native to lakes near Mexico City, can regenerate entire "+B+" this ability has made it a frequent subject of medical research.",q:"Which choice completes the text so that it conforms to the conventions of Standard English?",c:["limbs,","limbs;","limbs","limbs and"],a:1,e:"Два полных предложения. Их разделяет точка с запятой. Запятая без союза — ошибка (comma splice)."},
+{k:"3-1",p:"The collection of rare maps, which includes several hand-drawn charts from the 1600s, "+B+" on display in the library's main hall until March.",q:"Which choice completes the text so that it conforms to the conventions of Standard English?",c:["are","have been","is","were"],a:2,e:"Подлежащее — collection (единственное число), а не maps. Нужен глагол is."},
+{k:"2-1",p:"Early tests suggested that the new alloy would crack under repeated stress. "+B+" after engineers adjusted the cooling process, the alloy survived thousands of stress cycles without damage.",q:"Which choice completes the text with the most logical transition?",c:["However,","Similarly,","For example,","In other words,"],a:0,e:"Второе предложение противопоставлено первому: ожидали трещины, но сплав выдержал. Нужен However."}
+]},
+{id:"rw2",t:"R&W · Модуль 2",lvl:"сложный",min:12,q:[
+{k:"1-0",p:"Although the novelist's early reviews were lukewarm, later critics came to regard her spare, unadorned prose not as a deficiency but as a deliberate "+B+" of the ornate style fashionable at the time.",q:"Which choice completes the text with the most logical and precise word or phrase?",c:["imitation","repudiation","celebration","consequence"],a:1,e:"Простая проза противопоставлена вычурному стилю, значит это сознательный отказ от него: repudiation."},
+{k:"1-0",p:"The economist cautioned that the correlation between the two indicators, though striking, was "+B+" evidence of causation: other factors could plausibly account for the pattern.",q:"Which choice completes the text with the most logical and precise word or phrase?",c:["compelling","scant","abundant","conclusive"],a:1,e:"Экономист предостерегает: корреляция слабо доказывает причинность. Подходит scant (скудный)."},
+{k:"1-2",p:"Text 1: Linguist Mara Feld argues that children acquire grammar chiefly by detecting statistical patterns in the speech they hear; the more often a structure occurs, the earlier it is mastered.\n\nText 2: In a study of 60 toddlers, Okoye and Brandt found that some rarely heard sentence structures were mastered earlier than far more frequent ones, provided the rare structures appeared in emotionally engaging interactions with caregivers.",q:"Based on the texts, how would Okoye and Brandt (Text 2) most likely respond to Feld's claim in Text 1?",c:["By agreeing that frequency is the only factor that determines when a structure is mastered.","By arguing that children do not learn grammar from the speech they hear.","By suggesting that frequency alone does not fully explain the order in which structures are acquired.","By claiming that emotional engagement slows language learning."],a:2,e:"Во втором тексте редкие конструкции усваивались раньше частых. Это уточняет, но не отрицает роль частоты."},
+{k:"1-1",p:"When the ferry finally pulled away, Ines did not wave. She kept her hands in her coat pockets, counting the pilings as they slid past, as though the harbor were a sum she might still get right. Behind her, her brother was already describing the house they had never seen.",q:"Which choice best states the main purpose of the text?",c:["To explain how a ferry leaves a harbor.","To portray a character's quiet reluctance at a departure.","To describe an argument between two siblings.","To celebrate the beauty of a harbor."],a:1,e:"Инес не машет, держит руки в карманах, считает сваи: автор показывает её нежелание уезжать."},
+{k:"0-1",p:"Ecologists proposed that a certain desert shrub benefits neighboring seedlings mainly by shading them rather than by enriching the soil beneath it.",q:"Which finding, if true, would most directly support the ecologists' proposal?",c:["Soil beneath the shrubs contained more nitrogen than soil in open areas.","Seedlings growing near shrubs were taller than seedlings in open areas.","Seedlings under artificial shade cloths, planted in soil far from any shrub, survived at rates similar to those of seedlings under shrubs.","The shrubs lose most of their leaves during the dry season."],a:2,e:"Нужно отделить тень от почвы. Искусственная тень без почвы кустарника даёт тот же эффект, значит дело в тени."},
+{k:"0-3",p:"Paper produced in fifteenth-century Italian mills carries watermarks unique to each mill, and mill records show when each watermark design was in use. A letter purportedly written in 1452 is on paper bearing a watermark that, according to the records, was introduced in 1467. Unless the mill records are mistaken, the letter "+B,q:"Which choice most logically completes the text?",c:["must have been written by the owner of a mill.","could not have been written at the date it claims.","was written on paper from two different mills.","proves that watermarks were rare in the 1400s."],a:1,e:"Бумага появилась в 1467 году, письмо датировано 1452-м. Значит дата письма неверна."},
+{k:"3-0",p:"The mission's lead engineer, Priya "+B+" the delay to a faulty sensor that had passed every preflight test.",q:"Which choice completes the text so that it conforms to the conventions of Standard English?",c:["Raman attributed","Raman, attributed","Raman; attributed","Raman: attributed"],a:1,e:"Имя Priya Raman — уточнение к engineer, оно выделяется запятыми с обеих сторон."},
+{k:"3-1",p:"Having analyzed thousands of satellite images, "+B,q:"Which choice completes the text so that it conforms to the conventions of Standard English?",c:["the glacier was concluded by the researchers to be retreating faster than predicted.","it was concluded that the glacier was retreating faster than predicted.","the researchers concluded that the glacier was retreating faster than predicted.","the conclusion of the researchers was that the glacier was retreating faster than predicted."],a:2,e:"Оборот Having analyzed относится к тем, кто анализировал. Сразу после запятой должно стоять the researchers."},
+{k:"2-1",p:"The treatment reduced symptoms in 80 percent of trial participants. "+B+" the trial included only 40 people, so researchers caution against drawing broad conclusions.",q:"Which choice completes the text with the most logical transition?",c:["Accordingly,","Likewise,","Specifically,","That said,"],a:3,e:"Второе предложение ограничивает первое: результат хороший, но выборка мала. That said вводит оговорку."},
+{k:"2-0",p:"While researching a topic, a student has taken the following notes:\n• The Antikythera mechanism is an ancient Greek device recovered from a shipwreck in 1901.\n• It dates to roughly the second century BCE.\n• It contained at least 30 bronze gears.\n• It could predict eclipses and track the positions of the Sun and Moon.",q:"The student wants to emphasize what the device was able to do. Which choice most effectively uses relevant information from the notes to accomplish this goal?",c:["Recovered from a shipwreck in 1901, the Antikythera mechanism dates to roughly the second century BCE.","The Antikythera mechanism, an ancient Greek device, could predict eclipses and track the positions of the Sun and Moon.","The Antikythera mechanism contained at least 30 bronze gears.","The Antikythera mechanism is an ancient Greek device that was found in 1901."],a:1,e:"Цель — показать, что устройство умело. Только этот вариант говорит о его функциях."}
+]},
+{id:"m1",t:"Math · Модуль 1",lvl:"средний",min:13,q:[
+{k:"4-0",q:"If 4(x − 3) + 2 = 3x + 5, what is the value of x?",c:["5","10","15","17"],a:2,e:"4x − 12 + 2 = 3x + 5 → 4x − 10 = 3x + 5 → x = 15."},
+{k:"4-1",q:"A gym charges a one-time fee of $40 plus $25 per month. Which function gives the total cost C, in dollars, after m months?",c:["C = 40m + 25","C = 25m + 40","C = 65m","C = 25(m + 40)"],a:1,e:"Ежемесячная плата умножается на m, разовый взнос прибавляется: C = 25m + 40."},
+{k:"4-3",q:"3x + 2y = 16\nx − y = 2\nThe solution to the system is (x, y). What is the value of x + y?",a:6,e:"x = y + 2 → 3(y + 2) + 2y = 16 → y = 2, x = 4. Сумма 6. В Desmos: пересечение (4; 2)."},
+{k:"6-1",q:"After a 20% discount, a jacket costs $68. What was the original price, in dollars?",c:["54.40","81.60","85","88"],a:2,e:"0.8 · p = 68 → p = 85. Ловушка: прибавить 20% к 68 (81.60)."},
+{k:"5-0",q:"Which expression is equivalent to (2x − 3)(x + 4)?",c:["2x² + 5x − 12","2x² − 5x − 12","2x² + 11x − 12","2x² + 5x + 12"],a:0,e:"2x² + 8x − 3x − 12 = 2x² + 5x − 12."},
+{k:"5-2",q:"f(x) = x² − 6x + 11\nWhat is the minimum value of the function f?",a:2,e:"Вершина при x = −b/2a = 3. f(3) = 9 − 18 + 11 = 2. Спрашивают значение функции, а не x."},
+{k:"7-2",q:"A right triangle has a hypotenuse of length 13 and one leg of length 5. What is the area of the triangle?",c:["30","32.5","60","65"],a:0,e:"Второй катет: √(169 − 25) = 12. Площадь: ½ · 5 · 12 = 30."},
+{k:"6-2",q:"Data set: 3, 7, 7, 10, 13\nIf the value 13 is replaced with 28, which of the following will change?",c:["The mean only","The median only","Both the mean and the median","Neither the mean nor the median"],a:0,e:"Медиана остаётся 7 (среднее по порядку число). Сумма растёт, значит меняется только среднее."}
+]},
+{id:"m2",t:"Math · Модуль 2",lvl:"сложный",min:13,q:[
+{k:"4-3",q:"2x + ky = 7\n6x + 15y = 4\nIn the system above, k is a constant. If the system has no solution, what is the value of k?",a:5,e:"Нет решений, когда прямые параллельны: 2/6 = k/15 → k = 5. При этом 7/4 ≠ 1/3, прямые не совпадают."},
+{k:"5-1",q:"The equation x² − 8x + c = 0 has exactly one real solution. What is the value of the constant c?",c:["4","8","16","64"],a:2,e:"Один корень при D = 0: 64 − 4c = 0 → c = 16."},
+{k:"5-2",q:"A population of 500 bacteria doubles every 6 hours. Which function models the population P after t hours?",c:["P = 500(2)^(6t)","P = 500(2)^(t/6)","P = 500(6)^(t/2)","P = 500 + 2(t/6)"],a:1,e:"За t часов проходит t/6 удвоений: P = 500 · 2^(t/6). Проверка: при t = 6 получаем 1000."},
+{k:"4-4",q:"A truck can carry at most 2,000 kilograms. It is loaded with a 350-kilogram machine and boxes that weigh 45 kilograms each. What is the maximum number of boxes the truck can carry?",a:36,e:"350 + 45n ≤ 2000 → n ≤ 36.67. Количество коробок целое, округляем вниз: 36."},
+{k:"7-3",q:"x² + y² − 10x + 4y = 20\nThe equation above defines a circle in the xy-plane. What is the radius of the circle?",c:["5","7","√20","49"],a:1,e:"(x − 5)² + (y + 2)² = 20 + 25 + 4 = 49. Радиус: √49 = 7."},
+{k:"6-4",q:"The table shows how 200 students travel to school. If a student who bikes is selected at random, what is the probability that the student is in grade 12?",tb:[["","Bus","Bike","Total"],["Grade 11","48","32","80"],["Grade 12","54","66","120"],["Total","102","98","200"]],c:["66/200","66/120","33/49","98/200"],a:2,e:"Условие «среди тех, кто ездит на велосипеде» задаёт знаменатель 98. 66/98 = 33/49."},
+{k:"7-2",q:"In right triangle ABC, angle C is the right angle and sin A = 3/5. What is the value of cos B?",c:["3/5","4/5","3/4","5/3"],a:0,e:"Углы A и B в сумме дают 90°, поэтому cos B = sin A = 3/5."},
+{k:"5-0",q:"(ax + 3)² = 16x² + bx + 9\nIn the equation above, a and b are constants and a > 0. What is the value of b?",a:24,e:"(ax + 3)² = a²x² + 6ax + 9. a² = 16 → a = 4. b = 6a = 24."}
+]}
+];
+var mt=null;
+function mById(id){for(var i=0;i<MINI.length;i++)if(MINI[i].id===id)return MINI[i]}
+function mm(s){return("0"+Math.floor(s/60)).slice(-2)+":"+("0"+s%60).slice(-2)}
+function miniList(){
+  if(mt)return;
+  var R=S.minis||{};
+  $("miniList").innerHTML=MINI.map(function(m){var r=R[m.id];return '<div class="card"><div class="dayhead"><h3>'+esc(m.t)+'</h3><span class="pill">'+m.lvl+'</span></div><p class="small muted">'+m.q.length+' вопросов · '+m.min+' минут</p><p class="small" style="margin:8px 0 12px">'+(r?'Последний результат: <b class="num">'+r.last+"/"+m.q.length+'</b> · лучший: <b class="num">'+r.best+"/"+m.q.length+'</b>':'Ещё не пройден')+'</p><button class="pri" data-mstart="'+m.id+'">'+(r?"Пройти ещё раз":"Начать")+'</button></div>'}).join("");
+}
+function tblHtml(q){if(!q.tb)return"";return '<div class="scroll" style="margin:10px 0"><table style="width:auto">'+(q.cap?'<caption class="small muted" style="text-align:left;padding-bottom:4px">'+esc(q.cap)+'</caption>':"")+q.tb.map(function(r,i){return "<tr>"+r.map(function(c){return(i?"<td class=\"num\">":"<th>")+esc(c)+(i?"</td>":"</th>")}).join("")+"</tr>"}).join("")+'</table></div>'}
+function txt(s){return esc(s).replace(/\n/g,"<br>")}
+function answered(i){var a=mt.ans[i];return a!==null&&a!==undefined&&a!==""}
+function miniDraw(){
+  var m=mt.m,i=mt.i,q=m.q[i];
+  $("mNum").textContent="Вопрос "+(i+1)+" из "+m.q.length;
+  $("mFlag").checked=!!mt.flag[i];
+  var h=(q.p?'<p class="passage">'+txt(q.p)+'</p>':"")+tblHtml(q)+'<p class="passage" style="margin-top:12px;font-weight:600">'+txt(q.q)+'</p>';
+  if(q.c)h+=q.c.map(function(c,j){return '<button class="choice'+(mt.ans[i]===j?" on":"")+'" data-mc="'+j+'"><b>'+"ABCD"[j]+'</b><span>'+esc(c)+'</span></button>'}).join("");
+  else h+='<div class="row" style="margin-top:10px;max-width:260px"><label>Ваш ответ (число или дробь)<input id="mGrid" inputmode="decimal" autocomplete="off" value="'+esc(mt.ans[i]==null?"":mt.ans[i])+'"></label></div>';
+  $("mBody").innerHTML=h;
+  $("mNav").innerHTML=m.q.map(function(_,j){return '<button data-mgo="'+j+'" class="'+(answered(j)?"ans":"")+(j===i?" cur":"")+(mt.flag[j]?" flg":"")+'" aria-label="Вопрос '+(j+1)+'">'+(j+1)+'</button>'}).join("");
+  $("mAsk").hidden=true;
+}
+function miniClock(){var el=$("mClock");el.textContent=mt.hide?"··:··":mm(mt.left);el.className="mclock"+(mt.left<=120?" low":"")}
+function miniStart(id){
+  var m=mById(id);if(!m)return;
+  mt={m:m,i:0,ans:m.q.map(function(){return null}),flag:[],left:m.min*60,hide:false,end:Date.now()+m.min*60000};
+  $("mTitle").textContent=m.t;$("mHide").textContent="Скрыть";
+  $("miniHome").hidden=true;$("miniRes").hidden=true;$("miniRun").hidden=false;
+  miniDraw();miniClock();
+  mt.h=setInterval(function(){if(!mt)return;mt.left=Math.max(0,Math.round((mt.end-Date.now())/1000));miniClock();if(mt.left<=0)miniFinish(true)},500);
+  window.scrollTo(0,0);
+}
+function parseNum(s){s=String(s).trim().replace(",",".").replace("−","-");if(s.indexOf("/")>0){var p=s.split("/");return parseFloat(p[0])/parseFloat(p[1])}return parseFloat(s)}
+function isRight(q,a){if(a===null||a===undefined||a==="")return false;return q.c?a===q.a:Math.abs(parseNum(a)-q.a)<1e-6}
+function miniFinish(timeout){
+  clearInterval(mt.h);
+  var m=mt.m,used=m.min*60-mt.left,ok=0,rows="",wrong=[];
+  m.q.forEach(function(q,i){
+    var a=mt.ans[i],r=isRight(q,a),has=answered(i);if(r)ok++;else wrong.push(i);
+    var ya=!has?"нет ответа":q.c?"ABCD"[a]:String(a), ca=q.c?"ABCD"[q.a]+". "+q.c[q.a]:String(q.a);
+    rows+='<div class="card day '+(r?"full":"")+'" style="'+(r?"":"border-left-color:var(--bad)")+'"><div class="dayhead"><span class="pill num">'+(i+1)+'</span><span class="pill '+(r?"good":"bad")+'">'+(r?"верно":has?"неверно":"пропущен")+'</span><span class="small muted">'+esc(SK[q.k].n)+'</span></div>'+(q.p?'<p class="small muted" style="margin-bottom:6px">'+txt(q.p)+'</p>':"")+tblHtml(q)+'<p class="small"><b>'+txt(q.q)+'</b></p><p class="small" style="margin-top:6px">Ваш ответ: <b>'+esc(ya)+'</b> · Верный ответ: <b>'+esc(ca)+'</b></p><div class="ex">'+esc(q.e)+'</div></div>';
+  });
+  if(!S.minis)S.minis={};
+  var prev=S.minis[m.id];S.minis[m.id]={last:ok,best:Math.max(ok,prev?prev.best:0),d:key(new Date())};
+  var pct=Math.round(ok/m.q.length*100);
+  $("miniRes").innerHTML='<div class="head"><h1>'+esc(m.t)+': результат</h1><span class="pill '+(pct>=80?"good":pct>=60?"warn":"bad")+'">'+pct+'%</span></div><div class="grid g4"><div class="card tile"><div class="lab">Верно</div><div class="val">'+ok+"/"+m.q.length+'</div></div><div class="card tile"><div class="lab">Время</div><div class="val">'+mm(used)+'</div><div class="sub">'+(timeout?"время вышло":"из "+m.min+":00")+'</div></div><div class="card tile"><div class="lab">На вопрос</div><div class="val">'+Math.round(used/m.q.length)+' с</div><div class="sub">цель: '+(m.id[0]==="r"?"71":"95")+' с</div></div><div class="card tile"><div class="lab">Ошибок</div><div class="val">'+wrong.length+'</div></div></div><div class="row">'+(wrong.length?'<button class="pri" data-mact="log">Записать ошибки в журнал ('+wrong.length+')</button>':"")+'<button data-mact="exit">К списку пробников</button></div><p class="small muted">Мини-пробник не переводится в балл 400–1600: вопросов слишком мало. Ориентир: 80% и выше в сложном модуле — хороший уровень.</p>'+rows;
+  mt.done=true;mt.wrong=wrong;
+  $("miniRun").hidden=true;$("miniRes").hidden=false;
+  var keep=mt;mt=null;save(true);mt=keep;
+  window.scrollTo(0,0);
+}
+$("v-minis").addEventListener("click",function(e){
+  var t=e.target.closest("button");if(!t)return;var d=t.dataset;
+  if(d.mstart){miniStart(d.mstart);return}
+  if(!mt)return;
+  if(d.mc!==undefined&&!mt.done){var j=+d.mc;mt.ans[mt.i]=mt.ans[mt.i]===j?null:j;miniDraw()}
+  else if(d.mgo!==undefined&&!mt.done){mt.i=+d.mgo;miniDraw()}
+  else if(d.mact==="prev"){if(mt.i>0){mt.i--;miniDraw()}}
+  else if(d.mact==="next"){if(mt.i<mt.m.q.length-1){mt.i++;miniDraw()}else{$("mLeftQ").textContent=mt.m.q.filter(function(_,i){return!answered(i)}).length;$("mAsk").hidden=false}}
+  else if(d.mact==="ask"){$("mLeftQ").textContent=mt.m.q.filter(function(_,i){return!answered(i)}).length;$("mAsk").hidden=false}
+  else if(d.mact==="cancel"){$("mAsk").hidden=true}
+  else if(d.mact==="finish"){miniFinish(false)}
+  else if(d.mact==="hide"){mt.hide=!mt.hide;t.textContent=mt.hide?"Показать":"Скрыть";miniClock()}
+  else if(d.mact==="log"){var m=mt.m;mt.wrong.forEach(function(i){var q=m.q[i];S.errs.push({id:uid(),k:q.k,y:"c",n:("Мини-пробник «"+m.t+"», вопрос "+(i+1)+". "+q.e).slice(0,300),f:false})});mt.wrong=[];t.hidden=true;var keep=mt;mt=null;save(true);mt=keep}
+  else if(d.mact==="exit"){mt=null;$("miniRes").hidden=true;$("miniHome").hidden=false;miniList()}
+});
+$("v-minis").addEventListener("input",function(e){if(mt&&!mt.done&&e.target.id==="mGrid"){mt.ans[mt.i]=e.target.value.trim()===""?null:e.target.value.trim();var b=$("mNav").children[mt.i];if(b)b.classList.toggle("ans",answered(mt.i))}});
+$("mFlag").addEventListener("change",function(){if(mt&&!mt.done){mt.flag[mt.i]=this.checked;miniDraw()}});
+
+/* ---------- question bank: original questions + generated Math variants ---------- */
+function rng(s){return function(){s|=0;s=s+0x6D2B79F5|0;var t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function shuffle(a,r){for(var i=a.length-1;i>0;i--){var j=Math.floor(r()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
+var QW="Which choice completes the text with the most logical and precise word or phrase?",QC="Which choice completes the text so that it conforms to the conventions of Standard English?",QT="Which choice completes the text with the most logical transition?",QL="Which choice most logically completes the text?";
+/* [skill, level, passage, question, choices (correct first), explanation, table, caption] */
+var RWX=[
+["1-0",1,"The city's new bike lanes were initially "+B+" by shop owners, who feared losing parking spaces; within a year, however, most had come to support them.",QW,["opposed","funded","designed","ignored"],"Владельцы боялись потерять парковку, а позже стали поддерживать. Значит сначала были против: opposed."],
+["1-0",2,"Because the two manuscripts differ in only a few minor spellings, scholars consider the discrepancies between them "+B+".",QW,["negligible","profound","deliberate","alarming"],"Различия мелкие, значит несущественные: negligible."],
+["1-0",1,"The documentary does not merely list the composer's achievements; it "+B+" how her childhood in a port city shaped the rhythms of her later work.",QW,["illuminates","conceals","disputes","postpones"],"Фильм не просто перечисляет, а объясняет и раскрывает: illuminates."],
+["1-0",2,"The physicist's proposal was so "+B+" that even colleagues who doubted its conclusions admired the boldness of its central idea.",QW,["audacious","conventional","cautious","redundant"],"Подсказка в тексте: boldness. Смелый, дерзкий — audacious."],
+["1-0",3,"Far from being "+B+", the mural's seemingly random splashes of color follow a precise geometric plan that the artist drafted months in advance.",QW,["haphazard","vivid","intentional","ancient"],"Far from being означает противоположность точному плану: haphazard (беспорядочный)."],
+["1-0",3,"The senator's remarks were deliberately "+B+": by avoiding any specific commitment, she left herself free to support either version of the bill.",QW,["equivocal","candid","emphatic","concise"],"Она избегала конкретики, чтобы сохранить свободу выбора. Уклончивый — equivocal."],
+["1-1",1,"Many people assume that deserts are barren. Yet the Sonoran Desert hosts more than 2,000 plant species, many of which bloom within days of a rare rainfall. This burst of growth supports insects, birds, and mammals that have adapted to wait for it.","Which choice best states the main purpose of the text?",["To correct a common misconception about deserts by describing their biological richness","To explain why rainfall is rare in deserts","To argue that deserts need legal protection","To compare the climates of two different deserts"],"Текст начинается с распространённого мнения и опровергает его фактами о разнообразии жизни."],
+["1-1",2,"The engineer tested the prototype in a wind tunnel for six weeks. Each trial ended the same way: the wing vibrated violently at high speed. Only when she shortened the wing by a few centimeters did the vibration disappear.","Which choice best describes the function of the last sentence in the text as a whole?",["It reveals the change that resolved the problem described earlier.","It introduces the problem that the engineer faced.","It questions the reliability of wind tunnel tests.","It describes the engineer's professional training."],"Первые предложения описывают проблему, последнее — её решение."],
+["1-1",2,"Economists once treated consumers as purely rational calculators. Experiments in the late twentieth century showed that people routinely make choices that contradict this model, such as valuing an object more simply because they own it. Today, many economic models incorporate such tendencies.","Which choice best describes the overall structure of the text?",["It presents an earlier assumption, describes findings that challenged it, and notes the resulting shift.","It lists several unrelated experiments in economics.","It defends a traditional model against recent criticism.","It describes a debate that remains unresolved."],"Структура: старое допущение → эксперименты против него → изменение моделей."],
+["1-2",2,"Text 1: Urban planner Jo Reyes maintains that widening highways reduces traffic congestion by giving vehicles more room.\n\nText 2: Studies of dozens of cities show that when highways are widened, more people choose to drive, and within a few years congestion returns to its earlier level.","Based on the texts, the author of Text 2 would most likely say that Reyes's view in Text 1",["overlooks how added capacity changes drivers' behavior.","is fully supported by long-term data.","applies only to small towns.","underestimates the cost of construction."],"Во втором тексте расширение дорог привлекает новых водителей. Рейес этого не учитывает."],
+["0-0",1,"Octopuses have been observed carrying coconut shell halves across the seafloor and later assembling them into shelters. Because the shells are of no use while being carried, researchers regard the behavior as evidence of planning for a future need.","Which choice best states the main idea of the text?",["Octopuses' transport of shells for later use suggests that they can plan ahead.","Coconut shells are the main food source of octopuses.","Octopuses prefer shallow water to deep water.","Researchers disagree about why octopuses collect shells."],"Главная мысль в последнем предложении: поведение говорит о планировании."],
+["0-0",1,"Before moving to the coast, Tomas had never seen fog thick enough to hide the far side of a street. On his first morning there he walked to the bakery by counting lampposts, certain that if he lost count he would never find his way back.","According to the text, why did Tomas count lampposts?",["To keep track of his route in the fog","To measure the distance for a map he was drawing","To pass the time during a long walk","To find out how long the walk took"],"Он боялся не найти дорогу назад, если собьётся со счёта. Счёт помогал не потеряться в тумане."],
+["0-1",2,"A historian claims that in the fifteenth century the printing press spread fastest in cities that had universities.","Which finding, if true, would most directly support the historian's claim?",["By 1480, most university cities had at least one press, while most cities of similar size without universities had none.","Printing presses were expensive to build and operate.","Early printers often moved from one city to another.","Many of the earliest printed books were religious texts."],"Нужно сравнение городов с университетами и без них. Его даёт только этот вариант."],
+["0-1",3,"Biologists hypothesize that a certain species of songbird adjusts the pitch of its song in order to be heard over traffic noise.","Which finding, if true, would most directly support the biologists' hypothesis?",["Individual birds living near busy roads raise the pitch of their songs during rush hour and lower it when traffic is light.","Birds living near busy roads raise fewer offspring than birds in forests.","The species sings mostly at dawn.","Traffic noise consists mostly of low-pitched sounds."],"Гипотеза о подстройке. Её подтверждает изменение высоты песни у одних и тех же птиц вместе с уровнем шума."],
+["0-2",2,"An agronomist claims that adding compost was associated with a larger increase in crop yield.","Which choice most effectively uses data from the table to support the claim?",["From 2022 to 2023, yield rose by 0.7 tons per hectare on the compost plot but by only 0.1 on the plot without compost.","In 2022, the two plots had similar yields.","The compost plot yielded 3.8 tons per hectare in 2023.","The plot without compost yielded 3.0 tons per hectare in 2022."],"Утверждение о приросте. Нужно сравнить изменения на двух участках: 0.7 против 0.1.",[["Plot","2022","2023"],["With compost","3.1","3.8"],["Without compost","3.0","3.1"]],"Yield (tons per hectare)"],
+["0-2",2,"A researcher concludes that evening is the most popular study time among the students surveyed but that it is not preferred by a majority of them.","Which choice most effectively uses data from the table to support the conclusion?",["45 percent of students chose evening, more than chose any other time but fewer than half of those surveyed.","34 percent of students chose morning.","Afternoon was the least popular choice, at 21 percent.","More students chose morning than afternoon."],"Нужны оба факта: вечер на первом месте (45%), но это меньше половины.",[["Preferred study time","Share of students"],["Morning","34%"],["Afternoon","21%"],["Evening","45%"]]],
+["0-3",2,"Honeybees perform a waggle dance to tell nestmates where food is. In an experiment, bees that watched a dance and were then moved to a different location still flew in the direction and for the distance the dance indicated, arriving where the food would have been had they not been moved. This suggests that the bees "+B,QL,["rely on the information in the dance rather than simply following the scent of the food.","cannot find food without help from nestmates.","prefer food sources that are far from the hive.","ignore dances performed by unfamiliar bees."],"Пчёлы прилетели в неверное место, следуя танцу. Значит они пользуются информацией из танца, а не запахом."],
+["0-3",3,"The earliest known recipes for a certain blue pigment call for a mineral found only in mines hundreds of kilometers from the workshops where the pigment was made. No records of the workshops' owners traveling to the mines survive, yet the pigment was produced there for centuries. It is therefore likely that "+B,QL,["the mineral reached the workshops through trade.","the recipes were never actually used.","the pigment was in fact made at the mines.","the workshops were eventually moved closer to the mines."],"Минерал издалека, владельцы не ездили, производство шло веками. Самый осторожный вывод: минерал привозили торговцы."],
+["0-3",1,"Lotus seeds recovered from a dry lakebed were found to be about 1,300 years old, yet several sprouted when planted. This finding indicates that lotus seeds "+B,QL,["can remain viable for very long periods.","grow only in dry lakebeds.","sprout more quickly as they age.","cannot survive in water."],"Семена проросли через 1300 лет, значит долго сохраняют жизнеспособность."],
+["3-0",1,"Marie Tharp created the first detailed maps of the Atlantic Ocean "+B+" her work revealed a rift valley running along the Mid-Atlantic Ridge.",QC,["floor;","floor,","floor","floor and"],"Два полных предложения разделяет точка с запятой."],
+["3-0",2,"The expedition carried only three scientific "+B+" a barometer, a thermometer, and a compass.",QC,["instruments:","instruments;","instruments, such as:","instruments"],"Перед перечислением после полного предложения ставится двоеточие."],
+["3-0",2,"The quokka, a small marsupial found in southwestern "+B+" is known for its seemingly cheerful expression.",QC,["Australia,","Australia","Australia;","Australia:"],"Уточняющий оборот a small marsupial… выделяется запятыми с двух сторон."],
+["3-0",3,"Novelist Chidi Okafor wrote his first book in six "+B+" the editing, however, took nearly four years.",QC,["months;","months,","months","months, and"],"Слева и справа полные предложения. However не союз, поэтому нужна точка с запятой."],
+["3-0",2,"Because the bridge was built to sway slightly in strong "+B+" engineers were not alarmed when sensors detected movement during the storm.",QC,["winds,","winds;","winds.","winds"],"Придаточное с Because стоит в начале и отделяется запятой."],
+["3-1",1,"In 1928, Alexander Fleming noticed that mold had killed bacteria in one of his dishes, and he "+B+" to investigate.",QC,["began","begins","will begin","has begun"],"Действие в 1928 году, рядом noticed. Нужно простое прошедшее: began."],
+["3-1",2,"Each of the violins in the exhibit has "+B+" own distinctive varnish.",QC,["its","it's","their","there"],"Подлежащее Each — единственное число, притяжательное местоимение its без апострофа."],
+["3-1",2,"The two "+B+" findings were published in the same issue of the journal.",QC,["researchers'","researcher's","researchers","researchers's"],"Исследователей двое: множественное число с апострофом после s."],
+["3-1",3,"Among the artifacts recovered from the site "+B+" a bronze mirror and several glass beads.",QC,["were","was","is","has been"],"Порядок слов обратный. Подлежащее — a bronze mirror and several glass beads, оно во множественном числе."],
+["3-1",2,"The committee recommended that the old theater "+B+" rather than demolished.",QC,["be restored","restoring","to restore","restored it"],"После recommended that используется форма be + причастие, параллельно demolished."],
+["2-1",1,"Solar panels generate no electricity at night. "+B+" many solar-powered homes store energy in batteries during the day.",QT,["For this reason,","Nevertheless,","In contrast,","Similarly,"],"Второе предложение — следствие первого: For this reason."],
+["2-1",2,"The first printing of the novel sold fewer than 500 copies. "+B+" it is now considered one of the most influential books of its century.",QT,["Nevertheless,","Similarly,","Therefore,","For example,"],"Плохие продажи противопоставлены нынешнему признанию: Nevertheless."],
+["2-1",2,"Many migratory birds navigate using Earth's magnetic field. Arctic terns, "+B+" are thought to combine magnetic cues with the position of the Sun.",QT,["for example,","however,","as a result,","instead,"],"Полярные крачки — пример перелётных птиц из первого предложения."],
+["2-1",3,"The drug lowered blood pressure in laboratory tests. "+B+" it did so only at doses too high to be safe for patients.",QT,["However,","Moreover,","Thus,","Likewise,"],"Второе предложение ограничивает первое: результат есть, но дозы опасны."],
+["2-0",2,"While researching a topic, a student has taken the following notes:\n• Maya Lindqvist is an architect.\n• She designed the Halden Library, completed in 2015.\n• The library's roof is covered with native grasses.\n• The roof reduces the building's heating needs by about 30 percent.","The student wants to emphasize an environmental benefit of the library's design. Which choice most effectively uses relevant information from the notes to accomplish this goal?",["The grass-covered roof of the Halden Library reduces the building's heating needs by about 30 percent.","Maya Lindqvist is the architect who designed the Halden Library.","The Halden Library was completed in 2015.","The Halden Library, designed by Maya Lindqvist, has a roof covered with native grasses."],"Цель — экологическая выгода. Её называет только вариант со снижением затрат на отопление."],
+["2-0",3,"While researching a topic, a student has taken the following notes:\n• The kakapo is a flightless parrot native to New Zealand.\n• In 1995, only 51 kakapo remained.\n• A conservation program moved the birds to predator-free islands.\n• By 2022, the population had risen to 252.","The student wants to emphasize the success of the conservation program by using a comparison. Which choice most effectively uses relevant information from the notes to accomplish this goal?",["After a conservation program moved kakapo to predator-free islands, the population grew from 51 birds in 1995 to 252 by 2022.","The kakapo is a flightless parrot native to New Zealand.","In 1995, only 51 kakapo remained.","A conservation program moved kakapo to predator-free islands."],"Нужны и программа, и сравнение чисел: 51 против 252."]
+];
+var BANK={},RWIDS=[],HAND=[];
+MINI.forEach(function(m){var rw=m.id[0]==="r";m.sec=rw?"rw":"m";m.q.forEach(function(q,i){q.id=m.id+"-"+i;q.sec=m.sec;q.lvl=/2$/.test(m.id)?3:2;BANK[q.id]=q;HAND.push(q.id);if(rw)RWIDS.push(q.id)})});
+RWX.forEach(function(x,i){var r=rng(i+11),ord=shuffle([0,1,2,3],r),q={id:"x"+i,sec:"rw",k:x[0],lvl:x[1],p:x[2],q:x[3],c:ord.map(function(j){return x[4][j]}),a:ord.indexOf(0),e:x[5]};if(x[6])q.tb=x[6];if(x[7])q.cap=x[7];BANK[q.id]=q;HAND.push(q.id);RWIDS.push(q.id)});
+
+/* ----- Math generators ----- */
+function R(r,a,b){return a+Math.floor(r()*(b-a+1))}
+function pk(r,a){return a[Math.floor(r()*a.length)]}
+function pm(r){return r()<.5?-1:1}
+function sg(n,v){return(n<0?"− ":"+ ")+Math.abs(n)+(v||"")}
+function nn(n){return n<0?"−"+(-n):String(n)}
+function fN(v){return Number.isInteger(v)?String(v):v.toFixed(2)}
+function gcd(a,b){return b?gcd(b,a%b):Math.abs(a)}
+function fr(a,b){var g=gcd(a,b);return(a/g)+"/"+(b/g)}
+function mc(r,ans,ds){var A=String(ans),set=[A];ds.forEach(function(d){d=String(d);if(set.indexOf(d)<0&&set.length<4)set.push(d)});var n=1,num=!isNaN(Number(A));while(set.length<4){var v=num?fN(Number(A)+n*3):"None of the above"+(n>1?" ("+n+")":"");n++;if(set.indexOf(v)<0)set.push(v)}
+  if(set.every(function(s){return!isNaN(Number(s))}))set.sort(function(a,b){return a-b});else shuffle(set,r);return{c:set,a:set.indexOf(A)}}
+function MC(r,q,ans,ds,e){var m=mc(r,ans,ds);return{q:q,c:m.c,a:m.a,e:e}}
+var TRI=[[3,4,5],[5,12,13],[8,15,17],[7,24,25]];
+var G=[
+function(r){var a=R(r,2,9),x=R(r,-6,12),b=R(r,1,15)*pm(r),c=a*x+b;return MC(r,"If "+a+"x "+sg(b)+" = "+nn(c)+", what is the value of x?",x,[x+1,x-2,c-b],a+"x = "+nn(c-b)+" → x = "+nn(x)+".")},
+function(r){var f=R(r,2,9)*10,p=R(r,12,35),n=R(r,3,12);return{q:"A club charges a one-time fee of $"+f+" plus $"+p+" per month. What is the total cost, in dollars, of "+n+" months of membership?",a:f+p*n,e:f+" + "+p+" · "+n+" = "+(f+p*n)+"."}},
+function(r){var p=pk(r,[15,20,25,30,40,60,75]),n=R(r,2,15)*20,a=p*n/100;return MC(r,"What is "+p+"% of "+n+"?",a,[a+n/20,a*2,n-p],p+"/100 · "+n+" = "+a+".")},
+function(r){var m=R(r,1,5)*pm(r),x1=R(r,-4,4),dx=R(r,1,5),y1=R(r,-6,6);return MC(r,"What is the slope of the line that passes through the points ("+nn(x1)+", "+nn(y1)+") and ("+nn(x1+dx)+", "+nn(y1+m*dx)+")?",m,[-m,m+1,dx],"Наклон = Δy/Δx = "+nn(m*dx)+"/"+dx+" = "+nn(m)+".")},
+function(r){var n=R(r,4,5),m=R(r,8,30),a=[],s=0;for(var i=0;i<n-1;i++){var v=m+R(r,-5,5);a.push(v);s+=v}a.push(m*n-s);return{q:"What is the mean of the data set "+a.join(", ")+"?",a:m,e:"Сумма "+(m*n)+", чисел "+n+". Среднее "+m+"."}},
+function(r){var L=R(r,6,20),W=R(r,2,L-1),P=2*(L+W);return MC(r,"A rectangle has a perimeter of "+P+" and a length of "+L+". What is the area of the rectangle?",L*W,[L*W*2,L*(W+1),P*2],"Ширина = "+P+"/2 − "+L+" = "+W+". Площадь = "+L+" · "+W+" = "+(L*W)+".")},
+function(r){var a=R(r,1,3),b=R(r,1,6)*pm(r),c=R(r,1,9)*pm(r),x=R(r,1,4)*pm(r),v=a*x*x+b*x+c;return MC(r,"f(x) = "+(a===1?"":a)+"x² "+sg(b,"x")+" "+sg(c)+"\nWhat is the value of f("+nn(x)+")?",v,[-a*x*x+b*x+c,a*x*x-b*x+c,a*x*2+b*x+c],"Подставьте x = "+nn(x)+": "+a+" · "+(x*x)+" "+sg(b*x)+" "+sg(c)+" = "+nn(v)+". Квадрат отрицательного числа положителен.")},
+function(r){var a=R(r,2,5),b=R(r,a+1,9),u=R(r,3,12);return{q:"The ratio of adults to children on a trip is "+a+" to "+b+". If "+((a+b)*u)+" people are on the trip in all, how many are adults?",a:a*u,e:"Всего частей "+(a+b)+", одна часть = "+u+". Взрослых "+a+" · "+u+" = "+(a*u)+"."}},
+function(r){var x=R(r,1,9),y=R(r,1,9),a=R(r,2,5),b=R(r,2,5);return{q:a+"x + "+b+"y = "+(a*x+b*y)+"\nx − y = "+nn(x-y)+"\nThe solution to the system is (x, y). What is the value of x + y?",a:x+y,e:"Решение: x = "+x+", y = "+y+". Сумма "+(x+y)+". В Desmos это точка пересечения графиков."}},
+function(r){var d=pk(r,[10,20,25,30,40]),o=R(r,4,20)*20,s=o*(100-d)/100;return MC(r,"After a "+d+"% discount, an item costs $"+fN(s)+". What was the original price, in dollars?",o,[fN(s*(100+d)/100),fN(s+d),o+20],"(1 − "+d/100+") · p = "+fN(s)+" → p = "+o+". Ловушка: прибавить "+d+"% к новой цене.")},
+function(r){var a=R(r,2,4),b=R(r,1,6)*pm(r),c=R(r,1,3),d=R(r,1,6)*pm(r),v=a*d+b*c;return MC(r,"The expression ("+a+"x "+sg(b)+")("+(c===1?"":c)+"x "+sg(d)+") is equivalent to px² + qx + r, where p, q, and r are constants. What is the value of q?",v,[a*d-b*c,a*c,b*d],"q = "+a+" · "+nn(d)+" + "+nn(b)+" · "+c+" = "+nn(v)+".")},
+function(r){var r1=R(r,1,9),r2=R(r,-9,-1);if(r1+r2===0)r1++;var Bc=-(r1+r2),C=r1*r2;return MC(r,"What is the sum of the solutions to the equation x² "+sg(Bc,"x")+" "+sg(C)+" = 0?",r1+r2,[-(r1+r2),C,r1-r2],"Сумма корней равна −b/a = "+nn(r1+r2)+". Корни: "+r1+" и "+nn(r2)+".")},
+function(r){var h=R(r,1,6)*pm(r),k=R(r,-9,9);if(h*h+k===0)k++;return{q:"f(x) = x² "+sg(-2*h,"x")+" "+sg(h*h+k)+"\nWhat is the minimum value of the function f?",a:k,e:"Вершина при x = "+nn(h)+". f("+nn(h)+") = "+nn(k)+". Спрашивают значение функции, а не x."}},
+function(r){var t=pk(r,TRI),s=R(r,1,3),A=t[0]*s,Bb=t[1]*s,H=t[2]*s;return MC(r,"A right triangle has a hypotenuse of length "+H+" and one leg of length "+A+". What is the area of the triangle?",A*Bb/2,[A*Bb,A*H/2,A+Bb+H],"Второй катет: √("+H+"² − "+A+"²) = "+Bb+". Площадь = ½ · "+A+" · "+Bb+" = "+(A*Bb/2)+".")},
+function(r){var cap=R(r,8,30)*100,base=R(r,10,40)*10,w=pk(r,[35,45,55,65]),n=Math.floor((cap-base)/w);return{q:"An elevator can carry at most "+cap+" kilograms. It holds a "+base+"-kilogram cart and boxes that weigh "+w+" kilograms each. What is the maximum number of boxes the elevator can carry?",a:n,e:base+" + "+w+"n ≤ "+cap+" → n ≤ "+((cap-base)/w).toFixed(2)+". Округляем вниз: "+n+"."}},
+function(r){var a=R(r,2,9),b=R(r,2,9),g=R(r,2,9),T=a+b+g;return MC(r,"A bag contains "+a+" red, "+b+" blue, and "+g+" green marbles. If one marble is selected at random, what is the probability that it is not red?",fr(b+g,T),[fr(a,T),fr(b,T),fr(g,T),fr(a+g,T),fr(a+b,T),fr(1,T),fr(b+g,T+1)],"Не красных "+(b+g)+" из "+T+": "+fr(b+g,T)+".")},
+function(r){var m=R(r,1,5)*pm(r),x1=R(r,1,6)*pm(r),b=R(r,-9,9),y1=m*x1+b;return MC(r,"A line in the xy-plane has a slope of "+nn(m)+" and passes through the point ("+nn(x1)+", "+nn(y1)+"). What is the y-coordinate of the line's y-intercept?",b,[y1+m*x1,y1,b+2],"y = mx + b → "+nn(y1)+" = "+nn(m)+" · "+nn(x1)+" + b → b = "+nn(b)+".")},
+function(r){var rad=pk(r,[6,12]),th=pk(r,[60,90,120]),k=th/360*rad*rad;return{q:"A circle has a radius of "+rad+". A sector of the circle has a central angle of "+th+" degrees. The area of the sector is kπ, where k is a constant. What is the value of k?",a:k,e:"Площадь сектора = ("+th+"/360) · π · "+rad+"² = "+k+"π."}},
+function(r){var a=R(r,2,5),m=R(r,2,4),k=R(r,2,9),c1=R(r,1,9),c2=m*c1+R(r,1,5);return{q:a+"x + ky = "+c1+"\n"+(a*m)+"x + "+(k*m)+"y = "+c2+"\nIn the system above, k is a constant. If the system has no solution, what is the value of k?",a:k,e:"Нет решений, когда прямые параллельны: "+a+"/"+(a*m)+" = k/"+(k*m)+" → k = "+k+"."}},
+function(r){var h=R(r,2,9),s=pm(r);return MC(r,"The equation x² "+sg(2*h*s,"x")+" + c = 0 has exactly one real solution. What is the value of the constant c?",h*h,[2*h,h,4*h*h],"Один корень при D = 0: "+(4*h*h)+" − 4c = 0 → c = "+(h*h)+".")},
+function(r){var a=R(r,2,9)*100,d=pk(r,[3,4,5,6,8]),n=pk(r,[2,3,4]),v=a*Math.pow(2,n);return MC(r,"A population of "+a+" bacteria doubles every "+d+" hours. What is the population after "+(n*d)+" hours?",v,[a*2*n,a*n,a*Math.pow(2,n-1)],"За "+(n*d)+" часов проходит "+n+" удвоения: "+a+" · 2^"+n+" = "+v+".")},
+function(r){var h=R(r,1,6)*pm(r),k=R(r,1,6)*pm(r),rad=R(r,2,9),c=rad*rad-h*h-k*k;return MC(r,"x² + y² "+sg(-2*h,"x")+" "+sg(-2*k,"y")+" = "+nn(c)+"\nThe equation above defines a circle in the xy-plane. What is the radius of the circle?",rad,[rad*rad,rad+1,Math.abs(h)+Math.abs(k)],"Выделите полные квадраты: (x "+sg(-h)+")² + (y "+sg(-k)+")² = "+(rad*rad)+". Радиус "+rad+".")},
+function(r){var a=R(r,2,6),c=R(r,2,7);return{q:"("+a+"x + "+c+")² = "+(a*a)+"x² + bx + "+(c*c)+"\nIn the equation above, b is a constant. What is the value of b?",a:2*a*c,e:"(ax + c)² = a²x² + 2acx + c². b = 2 · "+a+" · "+c+" = "+(2*a*c)+"."}},
+function(r){var t=pk(r,TRI),p=t[0],q=t[1],h=t[2];return MC(r,"In right triangle ABC, angle C is a right angle and sin A = "+p+"/"+h+". What is the value of cos B?",p+"/"+h,[q+"/"+h,p+"/"+q,h+"/"+p,q+"/"+p],"Углы A и B в сумме дают 90°, поэтому cos B = sin A = "+p+"/"+h+".")},
+function(r){var t=pk(r,[[20,25,-10],[50,20,20],[10,10,-1],[20,10,8],[40,50,-30],[25,40,-25],[60,25,20]]),f=function(v){return v>0?v+"% increase":v<0?(-v)+"% decrease":"No change"};return MC(r,"A price is increased by "+t[0]+"% and then the new price is decreased by "+t[1]+"%. What is the net percent change from the original price?",f(t[2]),[f(t[0]-t[1]),f(-t[2]),f(t[0]+t[1]),f(t[2]+5),"No change"],"Множители: "+(1+t[0]/100)+" · "+(1-t[1]/100)+" = "+((100+t[2])/100)+". Проценты нельзя просто вычитать.")},
+function(r){var n=R(r,4,8),m=R(r,10,30),m2=m+pk(r,[1,2,3,-1,-2]),x=m2*(n+1)-m*n;return{q:"The mean of "+n+" numbers is "+m+". After one more number is added, the mean of the "+(n+1)+" numbers is "+m2+". What number was added?",a:x,e:"Новая сумма "+(m2*(n+1))+", старая "+(m*n)+". Разность "+x+"."}}
+];
+var GL=[1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2,3,3,3,3,3,3,3,3];
+var GK=["4-0","4-1","6-1","4-2","6-2","7-0","5-2","6-0","4-3","6-1","5-0","5-1","5-2","7-2","4-4","6-4","4-2","7-3","4-3","5-1","5-2","7-3","5-0","7-2","6-1","6-2"];
+function gen(i,seed){var q=G[i](rng(seed*7919+i*104729+1));q.id="g"+i+":"+seed;q.k=GK[i];q.lvl=GL[i];q.sec="m";return q}
+function newSeed(){return 1+Math.floor(Math.random()*999983)}
+function getQ(id){if(id[0]==="h"){var p2=id.slice(1).split(":");if(!H[+p2[0]])return null;return hgen(+p2[0],+p2[1])}if(id[0]==="g"){var p=id.slice(1).split(":");if(!G[+p[0]])return null;return gen(+p[0],+p[1])}return BANK[id]||null}
+function record(q,right){
+  S.st=S.st||{};var st=S.st[q.k]||[0,0];st[1]++;if(right)st[0]++;S.st[q.k]=st;
+  S.qs=S.qs||{};if(q.id[0]!=="g"&&q.id[0]!=="h")S.qs[q.id]=right?1:2;
+  S.rq=S.rq||[];var ix=S.rq.indexOf(q.id);
+  if(right){if(ix>=0)S.rq.splice(ix,1)}else if(ix<0){S.rq.push(q.id);if(S.rq.length>150)S.rq.shift()}
+}
+function accAll(){var r=0,t=0,st=S.st||{};Object.keys(st).forEach(function(k){r+=st[k][0];t+=st[k][1]});return{r:r,t:t}}
+var LV={1:"Easy",2:"Medium",3:"Hard"};
+
+/* ----- practice mode ----- */
+var pr=null;
+$("bDom").innerHTML='<option value="">Все разделы</option>'+DOM.map(function(d,i){return '<option value="'+i+'">'+d.s+": "+esc(d.n)+'</option>'}).join("");
+function bMatch(q,gens){var s=$("bSec").value,d=$("bDom").value,l=$("bLvl").value,st=$("bSt").value;
+  if(s&&q.sec!==s)return false;if(d!==""&&q.k.split("-")[0]!==d)return false;if(l&&String(q.lvl)!==l)return false;
+  if(!gens&&st){var v=(S.qs||{})[q.id];if(st==="new"&&v)return false;if(st==="wrong"&&v!==2)return false}
+  return true}
+function bGens(){if($("bSt").value==="wrong")return[];var a=[];G.forEach(function(_,i){if(bMatch({sec:"m",k:GK[i],lvl:GL[i]},true))a.push("g"+i)});H.forEach(function(_,i){if(bMatch({sec:"rw",k:HK[i],lvl:HL[i]},true))a.push("h"+i)});return a}
+function bankDraw(){
+  var n=HAND.filter(function(id){return bMatch(BANK[id])}).length,g=bGens().length,A=accAll();
+  $("bCount").textContent="Подходит: "+n+" авторских вопросов"+(g?" и "+g+" генераторов, которые каждый раз дают новые варианты":"")+".";
+  $("bStat").textContent=A.t?"Решено "+A.t+" · точность "+Math.round(A.r/A.t*100)+"%":"Всего "+HAND.length+" авторских вопросов и "+(G.length+H.length)+" генераторов";
+  $("bRq").textContent="Очередь повторения ("+(S.rq||[]).length+")";
+  $("bSv").textContent="Сохранённые ("+(S.sv||[]).length+")";
+}
+function prStart(ids,title){if(!ids.length){$("bCount").textContent="Здесь пока пусто. Измените фильтры или решите несколько вопросов.";return}
+  pr={ids:ids,i:0,ok:0,n:0,t:title};$("pTitle").textContent=title;$("bankHome").hidden=true;$("bankRun").hidden=false;prShow();window.scrollTo(0,0)}
+function prChoices(){var q=pr.q;return q.c.map(function(c,j){var cl=pr.chk?(j===q.a?" ok":pr.ans===j?" no":""):(pr.ans===j?" on":"");return '<button class="choice'+cl+'" data-pc="'+j+'"'+(pr.chk?" disabled":"")+'><b>'+"ABCD"[j]+'</b><span>'+esc(c)+'</span></button>'}).join("")}
+function prBody(){var q=pr.q,h=(q.p?'<p class="passage">'+txt(q.p)+'</p>':"")+tblHtml(q)+'<p class="passage" style="margin-top:12px;font-weight:600">'+txt(q.q)+'</p>';
+  if(q.c)h+='<div id="pCh">'+prChoices()+'</div>';else h+='<div class="row" style="margin-top:10px;max-width:260px"><label>Ваш ответ (число или дробь)<input id="pGrid" inputmode="decimal" autocomplete="off"></label></div>';
+  $("pBody").innerHTML=h}
+function prShow(){
+  $("pFb").innerHTML="";
+  var q=null;while(pr.i<pr.ids.length&&!(q=getQ(pr.ids[pr.i])))pr.i++;
+  if(!q){$("pMeta").innerHTML="";$("pBody").innerHTML='<h2>Набор завершён</h2><p style="margin-top:8px">Верно '+pr.ok+" из "+pr.n+'. Ошибки добавлены в очередь повторения.</p>';$("pCheck").hidden=true;$("pNext").hidden=true;$("pSave").hidden=true;$("pCount").textContent="";pr.q=null;return}
+  pr.q=q;pr.ans=null;pr.chk=false;
+  $("pMeta").innerHTML='<span class="pill">'+(q.sec==="rw"?"R&amp;W":"Math")+'</span><span class="pill">'+LV[q.lvl]+'</span><span class="small muted">'+esc(SK[q.k].d+" · "+SK[q.k].n)+'</span>';
+  $("pCount").textContent="Вопрос "+(pr.i+1)+" из "+pr.ids.length+" · верно "+pr.ok+"/"+pr.n;
+  $("pCheck").hidden=false;$("pNext").hidden=true;$("pSave").hidden=false;
+  $("pSave").textContent=(S.sv||[]).indexOf(q.id)>=0?"Убрать из сохранённых":"Сохранить";
+  prBody();
+}
+function prCheck(){
+  var q=pr.q;if(!q||pr.chk)return;
+  if(!q.c){var g=$("pGrid");pr.ans=g.value.trim()===""?null:g.value.trim();g.disabled=true}
+  if(pr.ans===null){$("pFb").innerHTML='<p class="small muted">Сначала выберите или введите ответ.</p>';if(!q.c)$("pGrid").disabled=false;return}
+  var r=isRight(q,pr.ans);pr.chk=true;pr.n++;if(r)pr.ok++;record(q,r);
+  if(q.c)$("pCh").innerHTML=prChoices();
+  $("pFb").innerHTML='<span class="pill '+(r?"good":"bad")+'">'+(r?"верно":"неверно")+'</span> <span class="small">Верный ответ: <b>'+esc(q.c?"ABCD"[q.a]+". "+q.c[q.a]:String(q.a))+'</b></span><div class="ex">'+esc(q.e)+'</div>'+aiBtn();
+  $("pCheck").hidden=true;$("pNext").hidden=false;
+  $("pCount").textContent="Вопрос "+(pr.i+1)+" из "+pr.ids.length+" · верно "+pr.ok+"/"+pr.n;
+  save(true);
+}
+$("v-bank").addEventListener("click",function(e){
+  var t=e.target.closest("button");if(!t)return;var d=t.dataset;
+  if(d.pc!==undefined&&pr&&!pr.chk){pr.ans=+d.pc;$("pCh").innerHTML=prChoices();return}
+  if(d.b==="start"){var ids=shuffle(HAND.filter(function(id){return bMatch(BANK[id])}),Math.random);bGens().forEach(function(x){ids.push(x+":"+newSeed());ids.push(x+":"+newSeed())});shuffle(ids,Math.random);prStart(ids.slice(0,40),"Практика")}
+  else if(d.b==="rq")prStart((S.rq||[]).slice(),"Очередь повторения")
+  else if(d.b==="sv")prStart((S.sv||[]).slice(),"Сохранённые")
+  else if(d.b==="check")prCheck()
+  else if(d.b==="next"){pr.i++;prShow();window.scrollTo(0,0)}
+  else if(d.b==="save"&&pr&&pr.q){S.sv=S.sv||[];var ix=S.sv.indexOf(pr.q.id);if(ix>=0)S.sv.splice(ix,1);else S.sv.push(pr.q.id);t.textContent=ix>=0?"Сохранить":"Убрать из сохранённых";save(false)}
+  else if(d.b==="quit"){pr=null;$("bankRun").hidden=true;$("bankHome").hidden=false;bankDraw()}
+});
+["bSec","bDom","bLvl","bSt"].forEach(function(id){$(id).addEventListener("change",bankDraw)});
+
+/* ----- full modules, full test, score estimate ----- */
+function sc(f,cap){return Math.min(cap||800,Math.round((200+600*f)/10)*10)}
+function rwForm(){
+  var by={},a=[],b=[],ord={1:0,0:1,3:2,2:3};
+  RWIDS.forEach(function(id){var q=BANK[id];(by[q.k]=by[q.k]||[]).push(q)});
+  Object.keys(by).forEach(function(k){shuffle(by[k],Math.random).forEach(function(q){(a.length<=b.length?a:b).push(q)})});
+  var so=function(x){return x.slice(0,27).sort(function(p,q){return ord[p.k[0]]-ord[q.k[0]]})};
+  var HS={"1-0":0,"3-1":1,"3-0":2,"2-1":3},mix=function(x){return x.map(function(q){return HS[q.k]!==undefined&&Math.random()<.5?hgen(HS[q.k],newSeed()):q})};return[mix(so(a)),mix(so(b))];
+}
+function mathForm(n1,n2,n3){
+  var out=[];[[1,n1],[2,n2],[3,n3]].forEach(function(p){var gs=[];GL.forEach(function(l,i){if(l===p[0])gs.push(i)});shuffle(gs,Math.random);for(var i=0;i<p[1];i++)out.push(gen(gs[i%gs.length],newSeed()))});
+  return out;
+}
+function buildTest(id){
+  if(id==="frw")return{id:"frw",t:"R&W · полный модуль",sec:"rw",min:32,q:rwForm()[0]};
+  if(id==="fm")return{id:"fm",t:"Math · полный модуль",sec:"m",min:35,q:mathForm(8,9,5)};
+  return null;
+}
+var EXTRA=[["full","Полный тест","98 вопросов · 2 ч 14 мин · оценка 400–1600","адаптивный Math"],["frw","R&W · полный модуль","27 вопросов · 32 минуты","новый набор каждый раз"],["fm","Math · полный модуль","22 вопроса · 35 минут","новые числа каждый раз"]];
+miniList=function(){
+  if(mt)return;
+  var Rr=S.minis||{},h=EXTRA.map(function(x){var r=Rr[x[0]],f=S.full;return '<div class="card day test"><div class="dayhead"><h3>'+x[1]+'</h3><span class="pill mark">'+x[3]+'</span></div><p class="small muted">'+x[2]+'</p><p class="small" style="margin:8px 0 12px">'+(x[0]==="full"?(f?'Последняя оценка: <b class="num">'+(f.rw+f.m)+'</b> (R&amp;W '+f.rw+', Math '+f.m+')':'Ещё не пройден'):(r?'Последний результат: <b class="num">'+r.last+'</b> · лучший: <b class="num">'+r.best+'</b>':'Ещё не пройден'))+'</p><button class="pri" data-mstart="'+x[0]+'">Начать</button></div>'}).join("");
+  h+=MINI.map(function(m){var r=Rr[m.id];return '<div class="card"><div class="dayhead"><h3>'+esc(m.t)+' · мини</h3><span class="pill">'+m.lvl+'</span></div><p class="small muted">'+m.q.length+' вопросов · '+m.min+' минут</p><p class="small" style="margin:8px 0 12px">'+(r?'Последний результат: <b class="num">'+r.last+"/"+m.q.length+'</b> · лучший: <b class="num">'+r.best+"/"+m.q.length+'</b>':'Ещё не пройден')+'</p><button class="pri" data-mstart="'+m.id+'">'+(r?"Пройти ещё раз":"Начать")+'</button></div>'}).join("");
+  $("miniList").innerHTML=h;
+};
+miniStart=function(id,cb){
+  if(id==="full"){fullStart();return}
+  var m=typeof id==="string"?(mById(id)||buildTest(id)):id;if(!m)return;
+  if(mt&&mt.h)clearInterval(mt.h);
+  mt={m:m,i:0,ans:m.q.map(function(){return null}),flag:[],left:m.min*60,hide:false,end:Date.now()+m.min*60000,cb:cb||null};
+  $("mTitle").textContent=m.t;$("mHide").textContent="Скрыть";
+  $("miniHome").hidden=true;$("miniRes").hidden=true;$("miniRun").hidden=false;
+  miniDraw();miniClock();
+  mt.h=setInterval(function(){if(!mt||mt.done)return;mt.left=Math.max(0,Math.round((mt.end-Date.now())/1000));miniClock();if(mt.left<=0)miniFinish(true)},500);
+  window.scrollTo(0,0);
+};
+function grade(m,ans){
+  var ok=0,wrong=[],rows=[];
+  m.q.forEach(function(q,i){
+    var a=ans[i],has=a!==null&&a!==undefined&&a!=="",r=isRight(q,a);if(r)ok++;else wrong.push(i);record(q,r);
+    var ya=!has?"нет ответа":q.c?"ABCD"[a]:String(a),ca=q.c?"ABCD"[q.a]+". "+q.c[q.a]:String(q.a);
+    rows.push('<div class="card day '+(r?"full":"")+'" style="'+(r?"":"border-left-color:var(--bad)")+'"><div class="dayhead"><span class="pill num">'+(i+1)+'</span><span class="pill '+(r?"good":"bad")+'">'+(r?"верно":has?"неверно":"пропущен")+'</span><span class="small muted">'+esc(SK[q.k].n)+'</span></div>'+(q.p?'<p class="small muted" style="margin-bottom:6px">'+txt(q.p)+'</p>':"")+tblHtml(q)+'<p class="small"><b>'+txt(q.q)+'</b></p><p class="small" style="margin-top:6px">Ваш ответ: <b>'+esc(ya)+'</b> · Верный ответ: <b>'+esc(ca)+'</b></p><div class="ex">'+esc(q.e)+'</div></div>');
+  });
+  return{ok:ok,wrong:wrong,rows:rows};
+}
+function showRes(html,doneObj){$("miniRes").innerHTML=html;$("miniRun").hidden=true;$("miniRes").hidden=false;mt=null;save(true);mt=doneObj;window.scrollTo(0,0)}
+miniFinish=function(timeout){
+  clearInterval(mt.h);
+  var m=mt.m,used=m.min*60-mt.left,g=grade(m,mt.ans);
+  if(mt.cb){var cb=mt.cb;mt=null;$("miniRun").hidden=true;cb(g,used);return}
+  if(!S.minis)S.minis={};
+  var prev=S.minis[m.id];S.minis[m.id]={last:g.ok,best:Math.max(g.ok,prev?prev.best:0),d:key(new Date())};
+  var n=m.q.length,pct=Math.round(g.ok/n*100);
+  showRes('<div class="head"><h1>'+esc(m.t)+': результат</h1><span class="pill '+(pct>=80?"good":pct>=60?"warn":"bad")+'">'+pct+'%</span></div><div class="grid g4"><div class="card tile"><div class="lab">Верно</div><div class="val">'+g.ok+"/"+n+'</div></div><div class="card tile"><div class="lab">Время</div><div class="val">'+mm(used)+'</div><div class="sub">'+(timeout?"время вышло":"из "+m.min+":00")+'</div></div><div class="card tile"><div class="lab">На вопрос</div><div class="val">'+Math.round(used/n)+' с</div><div class="sub">цель: '+(m.sec==="rw"?"71":"95")+' с</div></div><div class="card tile"><div class="lab">Ошибок</div><div class="val">'+g.wrong.length+'</div></div></div><div class="row">'+(g.wrong.length?'<button class="pri" data-mact="log">Записать ошибки в журнал ('+g.wrong.length+')</button>':"")+'<button data-mact="exit">К списку тестов</button></div><p class="small muted">Ошибки уже добавлены в очередь повторения в банке вопросов.</p>'+g.rows.join(""),{done:true,m:m,wrong:g.wrong});
+};
+var ft=null;
+function fullStart(){ft={s:0,g:[],rw:rwForm(),q:[],w:[],hard:false,used:0};fullStage()}
+function fullStage(){
+  var s=ft.s,m=s===0?{id:"f0",t:"Полный тест · R&W, модуль 1",sec:"rw",min:32,q:ft.rw[0]}:s===1?{id:"f1",t:"Полный тест · R&W, модуль 2",sec:"rw",min:32,q:ft.rw[1]}:s===2?{id:"f2",t:"Полный тест · Math, модуль 1",sec:"m",min:35,q:mathForm(8,9,5)}:{id:"f3",t:"Полный тест · Math, модуль 2",sec:"m",min:35,q:ft.hard?mathForm(2,8,12):mathForm(10,10,2)};
+  miniStart(m,function(g,used){
+    var off=ft.q.length;ft.g.push(g);ft.q=ft.q.concat(m.q);g.wrong.forEach(function(i){ft.w.push(off+i)});ft.used+=used;
+    if(s===2)ft.hard=g.ok>=15;
+    ft.s++;
+    if(ft.s<4){$("miniRes").innerHTML='<div class="card"><h2>'+(ft.s===2?"Перерыв 10 минут":"Модуль завершён")+'</h2><p style="margin:8px 0 12px">'+(ft.s===2?"Секция Reading and Writing позади. На экзамене здесь перерыв: встаньте, выпейте воды. Дальше секция Math.":"Ответы сохранены. Результаты появятся после всего теста, как на экзамене.")+'</p><button class="pri" data-fnext="1">'+(ft.s===2?"Начать Math":"Начать следующий модуль")+'</button></div>';$("miniRes").hidden=false;save(true);window.scrollTo(0,0)}
+    else fullEnd();
+  });
+}
+function fullEnd(){
+  var rw=ft.g[0].ok+ft.g[1].ok,mo=ft.g[2].ok+ft.g[3].ok,eR=sc(rw/54),eM=sc(mo/44,ft.hard?800:600);
+  S.full={rw:eR,m:eM,d:key(new Date())};
+  var rows="";ft.g.forEach(function(g,i){rows+='<div class="phase">'+["R&amp;W, модуль 1","R&amp;W, модуль 2","Math, модуль 1","Math, модуль 2"][i]+": "+g.ok+" верно</div>"+g.wrong.map(function(j){return g.rows[j]}).join("")});
+  showRes('<div class="head"><h1>Полный тест: результат</h1><span class="pill mark">оценка, не официальный балл</span></div><div class="grid g4"><div class="card tile"><div class="lab">Итог</div><div class="val">'+(eR+eM)+'</div><div class="sub">из 1600</div></div><div class="card tile"><div class="lab">R&amp;W</div><div class="val">'+eR+'</div><div class="sub">'+rw+' из 54</div></div><div class="card tile"><div class="lab">Math</div><div class="val">'+eM+'</div><div class="sub">'+mo+' из 44 · '+(ft.hard?"сложный модуль 2":"лёгкий модуль 2")+'</div></div><div class="card tile"><div class="lab">Время</div><div class="val">'+Math.round(ft.used/60)+' мин</div><div class="sub">из 134</div></div></div><div class="row"><button class="pri" data-fsave="1">Записать в график баллов</button>'+(ft.w.length?'<button data-mact="log">Записать ошибки в журнал ('+ft.w.length+')</button>':"")+'<button data-mact="exit">К списку тестов</button></div><p class="small muted">Оценка приблизительная, погрешность около 50 баллов на секцию: точную шкалу College Board не публикует. При лёгком втором модуле Math оценка ограничена 600. Ниже разбор ошибок.</p>'+rows,{done:true,m:{t:"Полный тест",q:ft.q},wrong:ft.w});
+}
+$("miniRes").addEventListener("click",function(e){
+  var t=e.target.closest("button");if(!t)return;
+  if(t.dataset.fnext&&ft){fullStage()}
+  else if(t.dataset.fsave&&S.full){S.tests.push({id:uid(),d:S.full.d,rw:S.full.rw,m:S.full.m,s:"SAT-BILAL, оценка"});t.hidden=true;var keep=mt;mt=null;save(false);mt=keep}
+});
+function calc(){var a=Math.max(0,Math.min(54,+$("cRW").value||0)),b=Math.max(0,Math.min(44,+$("cM").value||0)),r=sc(a/54),m=sc(b/44);$("cOut").textContent=(r+m)+" (R&W "+r+", Math "+m+")"}
+$("cRW").addEventListener("input",calc);$("cM").addEventListener("input",calc);calc();
+window.__sat={gen:gen,G:G,getQ:getQ,BANK:BANK};
+
+/* ---------- R&W generators: words in context, agreement, boundaries, transitions ---------- */
+/* [word, part of speech, conflict tags, sentence, fixed distractors] — words sharing a tag are never offered together */
+var VC=[
+["ambivalent","a","u","Having been offered the promotion but dreading the longer hours, Kwame felt "+B+" about accepting it, unable to say whether he wanted the job or not."],
+["pragmatic","a","fc","Rather than insisting on the ideal design, the engineers took the "+B+" approach of using parts that were cheap and already available."],
+["ubiquitous","a","c","Smartphones have become so "+B+" that it is now difficult to find a public place where no one is using one."],
+["nuanced","a","kj","The historian's account is "+B+": instead of labeling the king simply good or bad, it weighs the many shades of his decisions."],
+["tenuous","a","k","The link between the two events is "+B+", resting on a single unverified letter that many scholars doubt."],
+["ephemeral","a","e","The desert flowers are "+B+", blooming for only a day or two before they wither."],
+["conventional","a","c","Unlike her experimental early films, the director's latest work is "+B+", following the familiar structure audiences expect."],
+["disparate","a","d","The exhibit unites "+B+" objects, from ancient coins to modern circuit boards, that at first seem to have nothing in common."],
+["empirical","a","imq","The theory lacked "+B+" support until researchers gathered measurements from hundreds of field observations."],
+["feasible","a","f","With only two workers and one week remaining, finishing the bridge on schedule was no longer "+B+"."],
+["implicit","a","k","Although the contract never states the rule outright, the requirement is "+B+" in the wording of several clauses."],
+["inherent","a","hk","Some risk is "+B+" in any space mission; no amount of planning can remove it entirely."],
+["novel","a","n","Because no one had tried the method before, reviewers praised the study's "+B+" approach to measuring ocean currents."],
+["obsolete","a","o","Once digital cameras became affordable, film-developing machines in most shops quickly became "+B+" and were removed."],
+["plausible","a","f","The detective found the witness's explanation "+B+": it fit every known fact, even though it had not yet been proven."],
+["prevalent","a","c","The disease is most "+B+" in humid regions, where it affects nearly a third of the population."],
+["profound","a","mnc","The invention's effect on daily life was "+B+", transforming how people worked, traveled, and communicated."],
+["reluctant","a","u","Fearing the cold water, the children were "+B+" to jump in, and they stood at the edge for several minutes."],
+["subtle","a","k","The difference between the two paint colors is so "+B+" that most visitors cannot tell them apart."],
+["tentative","a","u","The schedule is still "+B+"; the organizers may change the dates once the venue confirms."],
+["viable","a","f","Without a steady source of funding, the small theater was not "+B+" as a business and closed within a year."],
+["indifferent","a","u","While her classmates argued passionately about the election, Sora remained "+B+", saying she did not care who won."],
+["meticulous","a","j","The restorer was "+B+", spending weeks cleaning each square centimeter of the painting with a tiny brush."],
+["resilient","a","l","The town proved "+B+", rebuilding its harbor within a year of the storm."],
+["skeptical","a","u","Having seen similar promises fail before, investors were "+B+" of the company's claim that profits would double."],
+["unprecedented","a","n","The flood was "+B+": in two hundred years of records, the river had never risen so high."],
+["abundant","a","cq","Fish were once so "+B+" in the bay that fishers could fill their boats in an hour."],
+["compelling","a","mf","The lawyer's argument was so "+B+" that even jurors who had doubted her client were persuaded."],
+["transient","a","e","The pain was "+B+", fading completely within a few minutes."],
+["wary","a","u","After being bitten once, the hiker was "+B+" of approaching unfamiliar dogs."],
+["substantiate","v","s","The reporter could not "+B+" the rumor, since no document or witness confirmed it."],
+["undermine","v","w","Repeated delays began to "+B+" public confidence in the project, and support for it steadily fell."],
+["corroborate","v","s","Two independent laboratories were able to "+B+" the finding by obtaining the same result."],
+["mitigate","v","w","Planting trees along the riverbank can "+B+" the damage caused by floods, though it cannot prevent them entirely."],
+["scrutinize","v","x","Auditors will "+B+" every receipt, examining each one line by line for errors."],
+["hinder","v","w","Heavy snow may "+B+" the rescue team, slowing its progress up the mountain."],
+["refute","v","w","The new measurements appear to "+B+" the old theory, proving its central prediction false."],
+["underscore","v","s","The accident served to "+B+" the importance of safety training, making its value clear to everyone."],
+["bolster","v","sp","The coach hoped that an easy win would "+B+" the team's confidence before the final."],
+["elicit","v","ey","The comedian's opening joke failed to "+B+" a single laugh from the audience."],
+["exacerbate","v","w","Pouring water on burning oil will only "+B+" the fire, making it spread faster."],
+["preclude","v","w","A prior injury does not "+B+" an athlete from competing, provided that a doctor approves."],
+["replicate","v","s","Other scientists tried to "+B+" the experiment but could not obtain the same results when they repeated it."],
+["discern","v","x","In the thick fog, the sailors could barely "+B+" the outline of the lighthouse."],
+["constrain","v","w","A small budget will "+B+" the filmmakers, limiting the number of locations they can use."],
+["diminish","v","w","Nothing could "+B+" her enthusiasm; even after three failures she was as eager as ever."],
+["foster","v","pe","Teachers use group projects to "+B+" cooperation, encouraging students to rely on one another."],
+["impede","v","w","Fallen trees continued to "+B+" traffic, blocking the road for hours."],
+["reconcile","v","r","The treaty sought to "+B+" the two nations' competing claims, finding terms that both could accept."],
+["supplant","v","t","Streaming services have begun to "+B+" cable television, taking its place in many homes."],
+["yield","v","y","The orchard is expected to "+B+" a record harvest this year."],
+["advocate","v","p","The senator plans to "+B+" a ban on the chemical, arguing publicly for its removal from stores."],
+["anomaly","n","","The single warm day in an otherwise freezing month was an "+B+", a departure from the pattern that puzzled forecasters.",["agreement","imitation","explanation"]]
+];
+var VRU={};V.forEach(function(w){VRU[w[0]]=w[1]});
+function clash(a,b){for(var i=0;i<a.length;i++)if(b.indexOf(a[i])>=0)return true;return false}
+var AG_H=["collection","series","box","set","list","pair"],AG_P=["rare maps","old letters","photographs","fossils","silver coins","manuscripts"],AG_C=["was assembled over several decades","dates from the 1800s","arrived only last week","took years to gather"],AG_E=["on display in the main hall","kept in a climate-controlled room","available to researchers by appointment","stored on the museum's third floor"];
+var BD=[["The museum extended its hours during the summer","attendance rose by nearly a third"],["Coral reefs cover less than one percent of the ocean floor","they support about a quarter of all marine species"],["The first telescope lenses were ground by hand","each one took weeks to finish"],["The river froze earlier than usual that winter","the ferry service was suspended"],["Sea otters wrap themselves in kelp before sleeping","the plants keep them from drifting away"],["The orchestra rehearsed the symphony for a month","the opening performance still contained several mistakes"],["Honey contains very little water","it can be stored for years without spoiling"],["The printing press lowered the cost of books","literacy spread more widely than before"]];
+var TW={c:["However,","Nevertheless,","Still,"],r:["Therefore,","As a result,","Consequently,"],x:["For example,","For instance,"],a:["Moreover,","In addition,","Furthermore,"]};
+var TRN=[["c","The trail is only two kilometers long.","it takes most hikers three hours because of its steep climbs."],["c","Early reviews of the film were harsh.","audiences filled theaters for months."],["c","The medicine works quickly.","its effects last only a few hours."],["r","The bridge was closed for repairs all summer.","commuters had to take a longer route across the river."],["r","The region received almost no rain for two years.","many farms switched to drought-resistant crops."],["r","The battery stores twice as much energy as older models.","the car can travel much farther on a single charge."],["x","Many animals use tools.","sea otters crack open shells with stones."],["x","Some plants defend themselves chemically.","tobacco leaves produce a toxin when insects chew them."],["a","The new stadium is easy to reach by train.","it has parking for five thousand cars."],["a","The software is free to download.","it runs on almost any computer."]];
+var TRU={c:"противопоставление",r:"причина и следствие",x:"пример",a:"добавление"};
+var H=[
+function(r,seed){var it=VC[seed%VC.length],ds=it[4];if(!ds){ds=shuffle(VC.filter(function(o){return o[1]===it[1]&&o[0]!==it[0]&&!clash(it[2],o[2])}).map(function(o){return o[0]}),r).slice(0,3)}
+  var c=shuffle([it[0]].concat(ds),r);return{p:it[3],q:QW,c:c,a:c.indexOf(it[0]),e:"Подходит "+it[0]+(VRU[it[0]]?" («"+VRU[it[0]]+"»)":"")+". Ищите подсказку в самом предложении: она объясняет пропущенное слово."}},
+function(r){var h=pk(r,AG_H),p=pk(r,AG_P),cl=pk(r,AG_C),e=pk(r,AG_E),sing=r()<.6;
+  if(sing){var c=shuffle(["is","are","were","have been"],r);return{p:"The "+h+" of "+p+", which "+cl+", "+B+" "+e+".",q:QC,c:c,a:c.indexOf("is"),e:"Подлежащее — "+h+" (единственное число), а не "+p+". Нужен глагол is."}}
+  var c2=shuffle(["are","is","was","has been"],r);return{p:"The "+p+" in the "+h+", which "+cl+", "+B+" "+e+".",q:QC,c:c2,a:c2.indexOf("are"),e:"Подлежащее — "+p+" (множественное число). Слова in the "+h+" его не меняют. Нужен глагол are."}},
+function(r){var d=pk(r,BD),w=d[0].split(" "),last=w.pop(),head=w.join(" "),t=R(r,0,2),c,ans,p,e;
+  if(t===0){p=head+" "+B+" "+d[1]+".";ans=last+";";c=[ans,last+",",last,last+" and"];e="Два полных предложения без союза разделяет точка с запятой."}
+  else if(t===1){p=head+" "+B+" however, "+d[1]+".";ans=last+";";c=[ans,last+",",last,last+", and"];e="However не союз. Между двумя полными предложениями перед ним нужна точка с запятой."}
+  else{p=head+" "+B+" and "+d[1]+".";ans=last+",";c=[ans,last+";",last+":",last+"."];e="Два полных предложения, соединённые союзом and: перед союзом ставится запятая."}
+  shuffle(c,r);return{p:p,q:QC,c:c,a:c.indexOf(ans),e:e}},
+function(r){var it=pk(r,TRN),ans=pk(r,TW[it[0]]),c=[ans];["c","r","x","a"].forEach(function(k){if(k!==it[0])c.push(pk(r,TW[k]))});shuffle(c,r);
+  return{p:it[1]+" "+B+" "+it[2],q:QT,c:c,a:c.indexOf(ans),e:"Связь между предложениями: "+TRU[it[0]]+". Подходит "+ans.replace(",","")+"."}}
+];
+var HK=["1-0","3-1","3-0","2-1"],HL=[2,2,2,1];
+function hgen(i,seed){var q=H[i](rng(seed*7919+i*31337+5),seed);q.id="h"+i+":"+seed;q.k=HK[i];q.lvl=HL[i];q.sec="rw";return q}
+
+/* ----- answer elimination in tests ----- */
+miniDraw=function(){
+  var m=mt.m,i=mt.i,q=m.q[i];mt.x=mt.x||{};
+  $("mNum").textContent="Вопрос "+(i+1)+" из "+m.q.length;
+  $("mFlag").checked=!!mt.flag[i];
+  var h=(q.p?'<p class="passage">'+txt(q.p)+'</p>':"")+tblHtml(q)+'<p class="passage" style="margin-top:12px;font-weight:600">'+txt(q.q)+'</p>';
+  if(q.c)h+=q.c.map(function(c,j){return '<div class="chrow"><button class="choice'+(mt.ans[i]===j?" on":"")+(mt.x[i+"-"+j]?" xd":"")+'" data-mc="'+j+'"><b>'+"ABCD"[j]+'</b><span>'+esc(c)+'</span></button><button class="ghost" data-mx="'+j+'" title="Вычеркнуть вариант" aria-label="Вычеркнуть вариант '+"ABCD"[j]+'">✕</button></div>'}).join("");
+  else h+='<div class="row" style="margin-top:10px;max-width:260px"><label>Ваш ответ (число или дробь)<input id="mGrid" inputmode="decimal" autocomplete="off" value="'+esc(mt.ans[i]==null?"":mt.ans[i])+'"></label></div>';
+  $("mBody").innerHTML=h;
+  $("mNav").innerHTML=m.q.map(function(_,j){return '<button data-mgo="'+j+'" class="'+(answered(j)?"ans":"")+(j===i?" cur":"")+(mt.flag[j]?" flg":"")+'" aria-label="Вопрос '+(j+1)+'">'+(j+1)+'</button>'}).join("");
+  $("mAsk").hidden=true;
+};
+$("miniRun").addEventListener("click",function(e){var t=e.target.closest("button");if(t&&t.dataset.mx!==undefined&&mt&&!mt.done){mt.x=mt.x||{};var k=mt.i+"-"+t.dataset.mx;mt.x[k]=!mt.x[k];miniDraw()}});
+
+/* ----- AI tutor (only when the viewer's Claude is available) ----- */
+var ai=null;
+(async function(){try{if(window.claude&&window.claude.use)ai=await window.claude.use("sample")}catch(e){ai=null}})();
+function aiBtn(){return ai?'<div style="margin-top:8px"><button data-b="ai">Объяснить подробнее (ИИ)</button><div id="pAi" class="ex" hidden></div></div>':""}
+$("v-bank").addEventListener("click",function(e){
+  var t=e.target.closest("button");if(!t||t.dataset.b!=="ai"||!ai||!pr||!pr.q)return;
+  var q=pr.q,box=$("pAi");t.disabled=true;box.hidden=false;box.textContent="Думаю…";
+  var prompt="Ты репетитор по Digital SAT. Объясни по-русски, по шагам и не длиннее 150 слов, почему верный ответ верен и в чём ошибка в ответе ученика. Цитаты из вопроса оставляй на английском. Не используй разметку Markdown.\n\n"+(q.p?"Текст: "+q.p+"\n":"")+(q.tb?"Таблица: "+JSON.stringify(q.tb)+"\n":"")+"Вопрос: "+q.q+"\n"+(q.c?"Варианты: "+q.c.map(function(c,j){return "ABCD"[j]+") "+c}).join("; ")+"\nВерный ответ: "+"ABCD"[q.a]+"\nОтвет ученика: "+(pr.ans===null?"нет":"ABCD"[pr.ans]):"Верный ответ: "+q.a+"\nОтвет ученика: "+pr.ans);
+  ai(prompt,{modelTier:"quick",onText:function(o){if(o&&o.text)box.textContent=o.text}}).then(function(res){if(res&&res.text)box.textContent=res.text}).catch(function(err){box.textContent=err&&err.code==="rate_limited"?"Слишком много запросов. Попробуйте через минуту.":"ИИ-объяснение сейчас недоступно.";if(!err||err.code!=="rate_limited")t.hidden=true});
+});
+
+/* ----- vocabulary quiz ----- */
+$("vcQuiz").addEventListener("click",function(){var ix=shuffle(VC.map(function(_,i){return i}),Math.random).slice(0,10);location.hash="#bank";prStart(ix.map(function(i){return "h0:"+(i+VC.length*(1+Math.floor(Math.random()*900)))}),"Квиз по словам")});
+window.__sat.hgen=hgen;window.__sat.H=H;
+
+/* ---------- routing ---------- */
+var VIEWS=["bank","minis","desmos","today","plan","toolkit","resources","drill","vocab","tests","errors","skills","testday"];
+function route(){var h=(location.hash||"").slice(1);if(VIEWS.indexOf(h)<0)h="today";VIEWS.forEach(function(v){$("v-"+v).classList.toggle("on",v===h)});Array.prototype.forEach.call(document.querySelectorAll("#nav a"),function(a){a.classList.toggle("on",a.getAttribute("href")==="#"+h)});window.scrollTo(0,0)}
+window.addEventListener("hashchange",route);
+
+render();vcNext();tmDraw();route();initCloud();
+setInterval(renderToday,60000);
+})();
+</script>
+</body>
+</html>
