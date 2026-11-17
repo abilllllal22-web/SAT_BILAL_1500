@@ -155,8 +155,10 @@ svg text{font-family:var(--mono);font-size:11px;fill:var(--muted)}
   <div class="brand">SAT-<span>BILAL</span></div>
   <div class="grp">Подготовка</div>
   <a href="#today">Сегодня</a>
+  <a href="#learn">Уроки по темам</a>
   <a href="#plan">План на 19 дней</a>
   <a href="#toolkit">Тактика и формулы</a>
+  <a href="#hacks">Лайфхаки</a>
   <a href="#desmos">Desmos: гайд</a>
   <a href="#resources">Источники</a>
   <div class="grp">Тренировка</div>
@@ -260,6 +262,65 @@ svg text{font-family:var(--mono);font-size:11px;fill:var(--muted)}
   </div>
 </section>
 
+<section class="view" id="v-learn">
+  <div id="lnHome" class="grid">
+    <div class="head"><h1>Уроки по темам</h1><span class="muted small">8 разделов экзамена, 30 уроков. В каждом: правило, алгоритм, ловушка, задания и видео</span></div>
+    <div class="card small">Как заниматься: откройте раздел, прочитайте урок, сразу решите 10–12 заданий по теме. После каждого ответа показывается разбор. Ошибки попадают в очередь повторения. Начинайте с разделов, где точность ниже всего.</div>
+    <div id="lnList" class="grid g2"></div>
+  </div>
+  <div id="lnDom" class="grid" hidden></div>
+</section>
+
+<section class="view" id="v-hacks">
+  <div class="head"><h1>Лайфхаки для экзамена</h1><span class="muted small">Приёмы, которые дают баллы без новых знаний</span></div>
+  <div class="grid g2">
+    <div class="card"><h2>Время и порядок</h2><ul class="tight small">
+      <li><b>Два прохода.</b> В Bluebook можно ходить по вопросам модуля в любом порядке. Сначала соберите все быстрые баллы, потом возвращайтесь к трудным.</li>
+      <li><b>Правило 90 секунд.</b> Застряли: выберите лучший вариант, поставьте Mark for Review и идите дальше.</li>
+      <li><b>R&amp;W с конца.</b> Вопросы на грамматику и переходы стоят во второй половине модуля и решаются за 30–40 секунд. Можно начать с них и оставить больше времени на чтение.</li>
+      <li><b>Таймер под контролем.</b> Таймер можно скрыть. За 5 минут до конца модуля он появится сам. Сверяйтесь с ним после каждых 9 вопросов R&amp;W и 7 вопросов Math: это треть модуля.</li>
+      <li><b>Три минуты в запасе.</b> Оставьте их на проверку вопросов с флажком.</li>
+    </ul></div>
+    <div class="card"><h2>Догадки и варианты</h2><ul class="tight small">
+      <li><b>Пустых ответов быть не должно.</b> Штрафа за ошибку нет.</li>
+      <li><b>Буква дня.</b> Для вопросов, до которых не дошли руки, заранее выберите одну букву и ставьте только её.</li>
+      <li><b>Вычёркивайте.</b> Инструмент вычёркивания вариантов есть в Bluebook. Два убранных варианта дают шанс 50%.</li>
+      <li><b>Ищите ошибку в варианте.</b> В R&amp;W неверный вариант неверен из-за одного слова. Находите это слово.</li>
+      <li><b>Крайние слова.</b> always, never, all, only, prove чаще всего стоят в неверных вариантах.</li>
+      <li><b>Не меняйте ответ без причины.</b> Меняйте только когда нашли конкретную ошибку.</li>
+    </ul></div>
+    <div class="card"><h2>Math</h2><ul class="tight small">
+      <li><b>Desmos раньше алгебры.</b> Уравнения, системы, параболы и число решений быстрее решаются графиком. См. раздел «Desmos: гайд».</li>
+      <li><b>Подставляйте варианты.</b> Если в вариантах числа, начните со среднего по величине и проверьте его в условии.</li>
+      <li><b>Подставляйте свои числа.</b> В задачах с буквами и процентами возьмите удобное число: 100 для процентов, 2 или 3 для переменных.</li>
+      <li><b>Справка под рукой.</b> Кнопка Reference открывает формулы площадей, объёмов и особых треугольников.</li>
+      <li><b>Ответ числом.</b> Можно вводить дробь или десятичную. Дробь сокращать не нужно. Если решений несколько, вводите любое одно.</li>
+      <li><b>Перечитайте последнюю строку вопроса.</b> Часто спрашивают не x, а 2x, x + y или значение в вершине.</li>
+    </ul></div>
+    <div class="card"><h2>Reading and Writing</h2><ul class="tight small">
+      <li><b>Сначала вопрос.</b> Тип вопроса говорит, что искать в тексте.</li>
+      <li><b>Своё слово.</b> В Words in Context придумайте слово до того, как смотреть варианты.</li>
+      <li><b>Заметки не читать.</b> В Rhetorical Synthesis читайте цель в вопросе, а не список заметок.</li>
+      <li><b>Одинаковые по смыслу варианты.</b> Если две связки значат одно и то же, обе неверны.</li>
+      <li><b>Короче лучше.</b> В грамматике при прочих равных верен самый простой вариант без лишних знаков.</li>
+      <li><b>Выделяйте.</b> В Bluebook можно выделять текст и оставлять заметки. Отмечайте утверждение, которое нужно подтвердить.</li>
+    </ul></div>
+    <div class="card"><h2>Неделя до экзамена</h2><ul class="tight small">
+      <li>Снижайте нагрузку, а не повышайте. Последний полный тест — за три дня.</li>
+      <li>Вставайте в то же время, что в день экзамена, чтобы голова работала в 8 утра.</li>
+      <li>Тренируйтесь на том ноутбуке, который возьмёте с собой.</li>
+      <li>Завершите Exam Setup в Bluebook за 1–5 дней до экзамена и сохраните билет.</li>
+      <li>Вечером накануне: зарядка, сумка, документы. Никаких новых тем.</li>
+    </ul></div>
+    <div class="card"><h2>Голова и нервы</h2><ul class="tight small">
+      <li>Один трудный вопрос ничего не решает. Сложный второй модуль — хороший знак: значит, первый решён сильно.</li>
+      <li>Сбились: 10 секунд, три медленных вдоха, следующий вопрос.</li>
+      <li>В перерыве встаньте, поешьте, выпейте воды. Ответы ни с кем не обсуждайте.</li>
+      <li>Черновик выдают на месте. Записывайте на нём номера вопросов, к которым хотите вернуться, и промежуточные вычисления.</li>
+    </ul></div>
+  </div>
+</section>
+
 <section class="view" id="v-minis">
   <div id="miniHome" class="grid">
     <div class="head"><h1>Тесты и модули</h1><span class="muted small">Темп как на экзамене: около 71 с на вопрос R&amp;W и 95 с на вопрос Math</span></div>
@@ -309,13 +370,14 @@ svg text{font-family:var(--mono);font-size:11px;fill:var(--muted)}
 
 <section class="view" id="v-vocab">
   <div class="head"><h1>Слова для Words in Context</h1><span class="muted small" id="vcStat"></span></div>
-  <div class="card flash">
+  <div class="card" id="vq"></div>
+  <div class="card flash" hidden>
     <div class="w" id="vcWord"></div>
     <div id="vcBack" class="muted"></div>
     <div class="row" style="justify-content:center;margin-top:8px"><button id="vcShow">Показать перевод</button><button id="vcNo">Не знаю</button><button class="pri" id="vcYes">Знаю</button></div>
   </div>
-  <p class="small muted">Слова, которые вы отметили «Знаю», больше не показываются. Сбросить можно кнопкой ниже. На экзамене проверяют значение слова в контексте, поэтому после карточек решайте 10 вопросов Words in Context.</p>
-  <div class="row"><button class="pri" id="vcQuiz">Квиз: 10 слов в контексте</button><button id="vcReset">Начать колоду заново</button></div>
+  <p class="small muted">Верный ответ отмечает слово как выученное, ошибка возвращает его в повторение. На экзамене проверяют значение слова в контексте, поэтому после раунда пройдите квиз «10 слов в контексте».</p>
+  <div class="row"><button class="pri" id="vcQuiz">Квиз: 10 слов в контексте</button><button id="vcReset">Сбросить выученные слова</button></div>
 </section>
 
 <section class="view" id="v-toolkit">
@@ -587,7 +649,7 @@ function renderSkills(){
 }
 var CHECK=["Bluebook обновлён на ноутбуке, который беру на экзамен","Exam Setup в Bluebook завершён (доступен за 1–5 дней до экзамена)","Билет (admission ticket) распечатан или сохранён в телефоне","Паспорт или удостоверение личности с фото, то же имя, что в регистрации","Ноутбук заряжен на 100%, зарядка в сумке","Ручка или карандаш для черновика","Свой калькулятор по желанию (Desmos есть в Bluebook)","Вода и перекус на перерыв","Маршрут до центра проверен, выезд с запасом 30 минут","Будильник и запасной будильник"];
 function renderCheck(){$("checklist").innerHTML=CHECK.map(function(t,i){var on=!!S.check[i];return '<div class="task'+(on?" done":"")+'"><input type="checkbox" id="c'+i+'" data-check="'+i+'"'+(on?" checked":"")+'><label for="c'+i+'">'+esc(t)+'</label></div>'}).join("")}
-function render(){renderToday();renderPlan();renderTests();renderErrors();renderSkills();renderCheck();bankDraw();if(typeof MINI!=="undefined"&&MINI)miniList();if(typeof DES!=="undefined"&&DES)renderDesmos();$("bzBest").textContent=S.best||0;vcStat()}
+function render(){renderToday();renderPlan();renderTests();renderErrors();renderSkills();renderCheck();bankDraw();lnDraw();if(typeof MINI!=="undefined"&&MINI)miniList();if(typeof DES!=="undefined"&&DES)renderDesmos();$("bzBest").textContent=S.best||0;vcStat()}
 
 /* ---------- resources ---------- */
 var RES=[
@@ -1160,8 +1222,128 @@ $("v-bank").addEventListener("click",function(e){
 $("vcQuiz").addEventListener("click",function(){var ix=shuffle(VC.map(function(_,i){return i}),Math.random).slice(0,10);location.hash="#bank";prStart(ix.map(function(i){return "h0:"+(i+VC.length*(1+Math.floor(Math.random()*900)))}),"Квиз по словам")});
 window.__sat.hgen=hgen;window.__sat.H=H;
 
+/* ---------- more questions ---------- */
+var RWX2=[
+["0-0",2,"Some frogs survive winter by allowing much of the water in their bodies to freeze. Their livers flood their cells with glucose, which acts as a natural antifreeze and keeps the cells themselves from freezing solid. When temperatures rise, the frogs thaw and resume normal activity within hours.","Which choice best states the main idea of the text?",["Certain frogs survive freezing temperatures by using glucose to protect their cells.","Frogs cannot survive cold winters without shelter.","Glucose damages the livers of frogs in winter.","Frogs migrate to warmer regions each winter."],"Весь текст описывает один механизм: глюкоза защищает клетки при замерзании."],
+["0-0",3,"Old Mr. Hale kept the shop's ledger in pencil, not ink. Ink, he said, pretended that things were settled, and nothing in a shop that sold on credit to its neighbors was ever settled; a debt might be forgiven on a Tuesday or doubled by a hard winter.","According to the text, why did Mr. Hale write in pencil?",["He believed the accounts were always subject to change.","He could not afford to buy ink.","He wanted to hide the debts from his neighbors.","He found pencil easier to read than ink."],"В тексте прямо сказано: ничто в лавке не было окончательным, долг мог измениться."],
+["0-1",2,"Researchers claim that street trees reduce summer air-conditioning use in nearby buildings.","Which finding, if true, would most directly support the researchers' claim?",["Buildings on tree-lined blocks used 15 percent less electricity for cooling than otherwise similar buildings on blocks without trees.","Trees planted in cities tend to live shorter lives than trees in forests.","Most residents say that they enjoy living near trees.","Electricity use in the city is higher in summer than in winter."],"Нужно сравнение расхода на охлаждение у похожих зданий с деревьями и без."],
+["0-1",3,"A linguist argues that a certain word entered English from Dutch in the 1600s through contact between sailors.","Which finding, if true, would most directly weaken the linguist's argument?",["The word appears in English manuscripts written two centuries before significant contact between English and Dutch sailors.","The word has a similar meaning in both languages.","Many English nautical terms were borrowed from Dutch.","Sailors in the 1600s often spoke several languages."],"Если слово было в английском за 200 лет до контактов, оно не могло прийти через них."],
+["0-2",2,"A reviewer claims that Model Y's battery life is less affected by screen brightness than Model X's.","Which choice most effectively uses data from the table to support the reviewer's claim?",["Raising brightness from 50% to 100% reduced battery life by 5 hours for Model X but by only 1 hour for Model Y.","At 50% brightness, Model X lasts 12 hours.","At 100% brightness, Model Y lasts longer than Model X.","At 50% brightness, Model X lasts longer than Model Y."],"Утверждение о влиянии яркости. Нужно сравнить падение: 5 часов против 1 часа.",[["Model","50% brightness","100% brightness"],["X","12","7"],["Y","10","9"]],"Battery life (hours)"],
+["0-3",2,"A museum found that visitors spent an average of 20 seconds at paintings with long explanatory labels and 45 seconds at the same paintings after the labels were shortened to a single sentence. This result suggests that "+B,QL,["shorter labels may encourage visitors to spend more time looking at paintings.","visitors dislike most of the museum's paintings.","the long labels contained factual errors.","the museum should remove labels from all of its paintings."],"Данные показывают только связь короткой подписи и большего времени. Осторожное may делает вывод верным."],
+["0-3",3,"A species of ant farms a fungus for food and cannot survive without it; the fungus, in turn, has never been found growing outside the ants' nests. Biologists therefore conclude that "+B,QL,["the ant and the fungus depend on each other for survival.","the fungus is harmful to the ants.","the ants once ate other kinds of food.","the fungus can easily be grown in laboratories."],"Муравьи не живут без гриба, гриб не встречается вне гнёзд: зависимость взаимная."],
+["1-1",2,"Bridges built from timber once seemed a relic of the past. But engineered wood panels, made by gluing layers of timber at right angles, are as strong as concrete for many uses and far lighter. Several cities have recently opened pedestrian bridges built almost entirely from these panels.","Which choice best describes the function of the second sentence in the text as a whole?",["It explains a development that makes the trend described in the last sentence possible.","It gives an example of a timber bridge that failed.","It restates the claim made in the first sentence.","It compares the cost of timber with the cost of concrete."],"Второе предложение объясняет технологию, благодаря которой города снова строят деревянные мосты."],
+["1-1",3,"Critics often describe the painter's late canvases as unfinished. Her letters tell a different story: she wrote that she stopped each one deliberately, at the moment when adding anything more would explain too much.","Which choice best states the main purpose of the text?",["To challenge a common interpretation of the painter's late work by citing her own account","To describe the techniques the painter used in her late canvases","To argue that critics should not read artists' letters","To compare the painter's early canvases with her late ones"],"Текст приводит мнение критиков и опровергает его письмами самой художницы."],
+["1-2",3,"Text 1: Astronomer Lin Wei proposes that the unusual dimming of a distant star is caused by a cloud of dust passing in front of it, since dust would block blue light more than red light.\n\nText 2: New observations show that the star dims by the same amount at every wavelength measured, from blue to red.","Based on the texts, what would the author of Text 2 most likely say about Lin's proposal in Text 1?",["It is difficult to reconcile with the observation that the dimming is equal across colors.","It has been confirmed by the new observations.","It applies to every star that changes in brightness.","It fails to consider how distant the star is."],"Пыль должна сильнее гасить синий свет, а наблюдения показывают одинаковое ослабление. Гипотеза плохо согласуется с данными."],
+["1-2",2,"Text 1: Many nutrition guides recommend eating breakfast, claiming that it improves concentration at school.\n\nText 2: A review of controlled studies found that students who ate breakfast scored higher on attention tests later in the morning than students who skipped it, though the difference was small.","Based on the texts, how does Text 2 relate to the claim described in Text 1?",["It offers modest support for the claim.","It directly contradicts the claim.","It shows that the claim is true only for adults.","It addresses an unrelated topic."],"Результаты выше, но разница мала: поддержка есть, но скромная."],
+["2-0",2,"While researching a topic, a student has taken the following notes:\n• Lake Baikal is located in Siberia.\n• It is the deepest lake in the world, at about 1,640 meters.\n• It holds about 20 percent of Earth's unfrozen surface fresh water.\n• It is about 25 million years old.","The student wants to emphasize how much water the lake contains. Which choice most effectively uses relevant information from the notes to accomplish this goal?",["Lake Baikal holds about 20 percent of Earth's unfrozen surface fresh water.","Lake Baikal, located in Siberia, is about 25 million years old.","At about 1,640 meters, Lake Baikal is the deepest lake in the world.","Lake Baikal is a lake located in Siberia."],"Цель — объём воды. Глубина близка по теме, но об объёме говорит только вариант с 20 процентами."]
+];
+RWX2.forEach(function(x,i){var r=rng(i+97),ord=shuffle([0,1,2,3],r),q={id:"z"+i,sec:"rw",k:x[0],lvl:x[1],p:x[2],q:x[3],c:ord.map(function(j){return x[4][j]}),a:ord.indexOf(0),e:x[5]};if(x[6])q.tb=x[6];if(x[7])q.cap=x[7];BANK[q.id]=q;HAND.push(q.id);RWIDS.push(q.id)});
+[["6-6",2,"A researcher randomly selected 300 adults from a city and found that those who walk daily reported better sleep than those who do not. Which conclusion is best supported by the study?",["There is an association between daily walking and better sleep among adults in the city.","Daily walking causes better sleep for all adults.","Adults in every city sleep better if they walk daily.","No conclusion can be drawn from the study."],"Отбор случайный, поэтому вывод можно распространить на взрослых города. Но людей не распределяли по группам, поэтому это связь, а не причина."],
+["6-6",3,"To test a new fertilizer, a scientist randomly assigned 40 of 80 similar plants to receive it. After a month, the treated plants were taller on average than the untreated plants. Which conclusion is best supported?",["The fertilizer likely caused the increased growth in these plants.","The fertilizer is associated with growth, but no causal conclusion is possible.","The fertilizer will increase the growth of all plant species.","The treated plants were taller because they received more sunlight."],"Случайное распределение по группам позволяет говорить о причине. Но только для этих растений, не для всех видов."]
+].forEach(function(x,i){var r=rng(i+201),ord=shuffle([0,1,2,3],r),q={id:"y"+i,sec:"m",k:x[0],lvl:x[1],q:x[2],c:ord.map(function(j){return x[3][j]}),a:ord.indexOf(0),e:x[4]};BANK[q.id]=q;HAND.push(q.id)});
+function addG(k,l,f){G.push(f);GK.push(k);GL.push(l)}
+addG("6-3",2,function(r){var m=R(r,2,9),b=R(r,10,60),x=R(r,5,20);return{q:"The line of best fit for a scatterplot is y = "+m+"x + "+b+", where x is the number of weeks since a club opened and y is the predicted number of members. According to the model, how many members are predicted when x = "+x+"?",a:m*x+b,e:"Подставьте x = "+x+": "+m+" · "+x+" + "+b+" = "+(m*x+b)+"."}});
+addG("6-3",3,function(r){var m=R(r,2,9),b=R(r,10,60),d=R(r,2,6);return MC(r,"The line of best fit for a data set is y = "+m+"x + "+b+". According to this model, by how much does the predicted value of y increase when x increases by "+d+"?",m*d,[m,m*d+b,b],"Наклон "+m+" — это рост y на единицу x. При росте x на "+d+": "+m+" · "+d+" = "+(m*d)+".")});
+addG("6-5",2,function(r){var n=pk(r,[80,100,200,400]),f=pk(r,[.2,.25,.4,.6,.75]),N=pk(r,[1200,2000,3600,4800]),k=Math.round(n*f);return{q:"In a random sample of "+n+" students at a school, "+k+" said that they walk to school. The school has "+N+" students. Based on the sample, what is the best estimate of the number of students at the school who walk to school?",a:Math.round(N*f),e:"Доля в выборке: "+k+"/"+n+" = "+f+". Оценка: "+f+" · "+N+" = "+Math.round(N*f)+"."}});
+addG("6-5",3,function(r){var p=R(r,35,65),e=R(r,2,5);return MC(r,"A poll of a random sample of voters estimated that "+p+"% support a measure, with a margin of error of "+e+" percentage points. Which conclusion is most appropriate?","It is plausible that between "+(p-e)+"% and "+(p+e)+"% of all voters support the measure.",["Exactly "+p+"% of all voters support the measure.","At least "+(p+e)+"% of all voters support the measure.","Between "+(p-e)+"% and "+(p+e)+"% of the people in the sample support the measure."],"Погрешность задаёт интервал для всей совокупности: "+p+" ± "+e+". В самой выборке доля известна точно.")});
+addG("7-1",1,function(r){var a=R(r,30,80),b=R(r,30,70);return{q:"In a triangle, two of the angles measure "+a+"° and "+b+"°. What is the measure, in degrees, of the third angle?",a:180-a-b,e:"Сумма углов треугольника 180°: 180 − "+a+" − "+b+" = "+(180-a-b)+"."}});
+addG("7-1",2,function(r){var s=R(r,3,9),k=R(r,2,5),t=R(r,4,12);return{q:"Triangles ABC and DEF are similar, with AB corresponding to DE and BC corresponding to EF. If AB = "+s+", DE = "+(s*k)+", and BC = "+t+", what is the length of EF?",a:t*k,e:"Коэффициент подобия: "+(s*k)+"/"+s+" = "+k+". EF = "+t+" · "+k+" = "+(t*k)+"."}});
+addG("7-1",3,function(r){var E=R(r,100,150),a=R(r,30,E-40);return{q:"In triangle ABC, the exterior angle at vertex C measures "+E+"°, and angle A measures "+a+"°. What is the measure, in degrees, of angle B?",a:E-a,e:"Внешний угол равен сумме двух несмежных внутренних: B = "+E+" − "+a+" = "+(E-a)+"."}});
+addG("7-0",2,function(r){var rad=R(r,2,6),h=R(r,3,12);return{q:"A right circular cylinder has a radius of "+rad+" and a height of "+h+". The volume of the cylinder is kπ, where k is a constant. What is the value of k?",a:rad*rad*h,e:"V = πr²h = π · "+(rad*rad)+" · "+h+" = "+(rad*rad*h)+"π."}});
+addG("6-0",2,function(r){var v=R(r,12,40),m=R(r,2,5),t=R(r,6,15);return{q:"A printer prints "+(v*m)+" pages in "+m+" minutes. At this rate, how many pages does it print in "+t+" minutes?",a:v*t,e:"Скорость: "+(v*m)+"/"+m+" = "+v+" страниц в минуту. За "+t+" минут: "+(v*t)+"."}});
+
+/* ---------- lessons: [суть, [шаги], ловушка] ---------- */
+var LES={
+"0-0":["Вопрос о главной мысли текста или о конкретной детали.",["Сначала прочитайте вопрос, потом текст.","Сформулируйте мысль текста своими словами в одну короткую фразу.","Выберите вариант, который покрывает весь текст. Для детали найдите предложение, где она названа."],"Вариант верен по факту, но слишком узок (одна деталь) или слишком широк. Слова always, never, all почти всегда делают вариант неверным."],
+"0-1":["Нужно выбрать факт, который поддерживает или ослабляет утверждение.",["Выделите утверждение дословно: кто, что и с чем сравнивается.","Спросите себя, что должно оказаться правдой, чтобы утверждение подтвердилось.","Ищите вариант именно об этой связи или сравнении."],"Вариант по теме текста, но не про само утверждение. В вопросах weaken ищите факт, с которым утверждение несовместимо."],
+"0-2":["Данные из таблицы или графика должны поддержать вывод.",["Прочитайте вывод до таблицы.","Найдите в таблице числа, которые его доказывают.","Проверьте вариант дважды: числа верны и они поддерживают именно этот вывод."],"Число из таблицы названо верно, но не относится к выводу. Таких вариантов обычно два из четырёх."],
+"0-3":["Нужно закончить текст логическим выводом.",["Выпишите посылки: что известно из текста.","Вывод — это минимальный шаг из посылок, без новых фактов.","Отбросьте варианты, где появляется информация, которой в тексте нет."],"Слишком сильный вывод: must, proves, all. Верный ответ часто осторожный: may, suggests, likely."],
+"1-0":["Нужно подобрать слово, точное по смыслу в данном контексте.",["Закройте варианты и прочитайте предложение.","Подставьте своё простое слово.","Выберите вариант, ближайший к вашему слову, и проверьте оттенок: плюс или минус."],"Знакомое слово использовано в редком значении. Или слово по теме текста, которое не подходит по смыслу предложения."],
+"1-1":["Вопрос о том, зачем написан текст или отдельное предложение.",["Определите, что делает каждое предложение: вводит тему, возражает, приводит пример, делает вывод.","Смотрите на глагол в варианте: explains, challenges, illustrates.","Выберите вариант, где и глагол, и объект точны."],"Вариант пересказывает содержание вместо функции. Верный ответ говорит, что предложение делает, а не о чём оно."],
+"1-2":["Два коротких текста, нужно понять, как автор одного отнесётся к другому.",["Сформулируйте позицию каждого текста одной фразой.","Определите отношение: согласие, возражение, уточнение.","Выберите вариант с точной степенью: частично согласен не равно полностью согласен."],"Вариант приписывает автору более резкую позицию, чем в тексте."],
+"2-0":["Даны заметки и цель. Нужно выбрать предложение, которое выполняет цель.",["Заметки подробно не читайте.","Прочитайте цель в вопросе и подчеркните ключевые слова.","Выберите вариант, который выполняет цель полностью. Если в цели две части, в ответе должны быть обе."],"Все варианты фактически верны. Неверные просто отвечают на другую цель."],
+"2-1":["Нужно выбрать слово-связку между предложениями.",["Прочитайте оба предложения без связки.","Определите связь: противопоставление, причина, пример, добавление, порядок.","Выберите слово из этой группы."],"Если два варианта означают одно и то же (However и Nevertheless), оба неверны: правильный ответ один."],
+"3-0":["Пунктуация между частями предложения.",["Проверьте, полное ли предложение слева и справа от пропуска.","Два полных предложения: точка, точка с запятой или запятая с союзом (for, and, nor, but, or, yet, so).","Двоеточие и тире ставятся после полного предложения. Вставку выделяют два одинаковых знака."],"Запятая между двумя полными предложениями без союза — ошибка. However и therefore не союзы."],
+"3-1":["Грамматика: согласование, времена, местоимения, притяжательные формы, обороты.",["Найдите подлежащее: мысленно вычеркните вставки и фразы с of.","Сверьте число и время глагола с подлежащим и контекстом.","Оборот в начале предложения должен относиться к слову сразу после запятой."],"Ближайшее к пропуску существительное часто не подлежащее. its — притяжательное, it's — это it is."],
+"4-0":["Линейное уравнение с одной переменной.",["Раскройте скобки и соберите x слева, числа справа.","Проверьте ответ подстановкой или в Desmos.","Нет решений: коэффициенты при x равны, числа разные. Бесконечно много: равно всё."],"Знак при раскрытии скобок с минусом. Спрашивают значение выражения (например, 2x + 1), а не x."],
+"4-1":["Линейная функция y = mx + b в задачах и на графике.",["m — изменение y на единицу x (скорость, цена за штуку).","b — начальное значение при x = 0.","По двум точкам найдите m, затем b подстановкой."],"В текстовой задаче перепутаны разовый взнос (b) и плата за единицу (m)."],
+"4-2":["Уравнение прямой с двумя переменными.",["y = mx + b: наклон m, пересечение с осью y в b.","Ax + By = C: наклон равен −A/B.","Параллельные прямые: наклоны равны. Перпендикулярные: произведение наклонов −1."],"Знак наклона в форме Ax + By = C. Точки пересечения с осями: подставляйте 0."],
+"4-3":["Система двух линейных уравнений.",["Решайте подстановкой, сложением или в Desmos (точка пересечения).","Одно решение: наклоны разные.","Нет решений: наклоны равны, свободные члены разные. Бесконечно много: уравнения пропорциональны."],"Спрашивают x + y или 2x, а не x. Дочитывайте вопрос."],
+"4-4":["Линейные неравенства и задачи на ограничения.",["Решайте как уравнение.","При умножении или делении на отрицательное число знак меняется.","at most — это ≤, at least — это ≥. Ответ в штуках округляйте в сторону, которая не нарушает условие."],"Округление вверх там, где нужно вниз: 36.67 коробки означает 36."],
+"5-0":["Эквивалентные выражения: раскрытие скобок, разложение, степени.",["Раскройте скобки или вынесите общий множитель.","Помните формулы: a² − b² = (a − b)(a + b), (a ± b)² = a² ± 2ab + b².","Проверка: подставьте x = 2 в исходное выражение и в варианты."],"(a + b)² не равно a² + b². Потерян знак у последнего слагаемого."],
+"5-1":["Квадратные и другие нелинейные уравнения и системы.",["Разложите на множители или используйте формулу корней.","Число решений определяет дискриминант: D > 0 два, D = 0 одно, D < 0 ни одного.","Систему с параболой и прямой решайте подстановкой или в Desmos."],"Потерян второй корень. В уравнениях с корнем проверяйте ответ: возможен посторонний корень."],
+"5-2":["Параболы, экспоненты и другие нелинейные функции.",["Парабола y = a(x − h)² + k: вершина (h; k). Для y = ax² + bx + c вершина при x = −b/2a.","Экспонента y = a · bˣ: a — стартовое значение, b — множитель за шаг.","Рост на 5% за шаг означает b = 1.05, падение на 5% — b = 0.95."],"Спрашивают значение функции в вершине, а ученик отвечает x вершины."],
+"6-0":["Отношения, скорости, пропорции, единицы измерения.",["Запишите пропорцию с единицами: одинаковые единицы на одном уровне.","Найдите значение на одну единицу, затем умножьте.","Переводите единицы цепочкой множителей."],"Отношение часть к части перепутано с частью к целому. Квадратные единицы: 1 м² = 10 000 см²."],
+"6-1":["Проценты.",["Процент — это множитель: 30% = 0.30.","Увеличение на p%: умножьте на (1 + p/100). Уменьшение: на (1 − p/100).","Исходное значение = новое значение / множитель."],"Проценты от разных баз нельзя складывать: +20% и −20% не дают исходное число."],
+"6-2":["Данные с одной переменной: среднее, медиана, размах, разброс.",["Среднее = сумма / количество. Сумма = среднее · количество.","Медиана — середина упорядоченного списка.","Выброс сильно меняет среднее и почти не меняет медиану. Стандартное отклонение показывает разброс."],"Медиану ищут в неупорядоченном списке."],
+"6-3":["Диаграммы рассеяния и линия наилучшего соответствия.",["Наклон линии — прогнозируемое изменение y на единицу x.","Прогноз получают подстановкой x в уравнение линии.","Свободный член — прогноз при x = 0."],"Фактическое значение точки перепутано с прогнозом по линии."],
+"6-4":["Вероятность и условная вероятность по таблице.",["P = благоприятные исходы / все исходы.","Слова given, among, of those who задают знаменатель: это итог нужной строки или столбца.","Числитель — клетка на пересечении."],"В знаменателе взят общий итог таблицы вместо итога группы."],
+"6-5":["Выводы по выборке и погрешность.",["Случайная выборка позволяет делать вывод о совокупности, из которой она взята.","Оценка = доля в выборке · размер совокупности.","Интервал = оценка ± погрешность. Чем больше выборка, тем меньше погрешность."],"Вывод распространён на другую группу людей. Или сказано exactly вместо plausible."],
+"6-6":["Оценка статистических утверждений.",["Случайный отбор участников: результат можно обобщать на совокупность.","Случайное распределение по группам: можно говорить о причине.","Без распределения по группам есть только связь."],"Связь принята за причину (correlation is not causation)."],
+"7-0":["Площадь и объём.",["Формулы даны в справке Bluebook: кнопка Reference.","При увеличении размеров в k раз площадь растёт в k² раз, объём в k³ раз.","Сложную фигуру разбейте на простые."],"Радиус перепутан с диаметром. Единицы площади и объёма."],
+"7-1":["Прямые, углы и треугольники.",["Сумма углов треугольника 180°. Внешний угол равен сумме двух несмежных внутренних.","Вертикальные углы равны. При параллельных прямых накрест лежащие углы равны.","В подобных треугольниках стороны пропорциональны."],"В подобных треугольниках перепутаны соответственные стороны."],
+"7-2":["Прямоугольные треугольники и тригонометрия.",["Теорема Пифагора и тройки: 3-4-5, 5-12-13, 8-15-17.","sin = противолежащий / гипотенуза, cos = прилежащий / гипотенуза, tan = противолежащий / прилежащий.","sin x = cos(90° − x). Особые треугольники: 45-45-90 и 30-60-90."],"Калькулятор в радианах вместо градусов."],
+"7-3":["Окружности.",["Уравнение: (x − h)² + (y − k)² = r², центр (h; k).","Раскрытое уравнение приводите выделением полного квадрата.","Длина дуги = (θ/360) · 2πr, площадь сектора = (θ/360) · πr²."],"В уравнении справа стоит r², а не r. Знаки координат центра противоположны знакам в скобках."]
+};
+var VID_RW=[["52 SAT Reading & Writing Tips to Break 1500","https://www.youtube.com/watch?v=FS_nvzsoIyE"],["SAT/PSAT: Reading and Writing Review in 36 Minutes","https://www.youtube.com/watch?v=MA0VYKOQbd4"],["Digital SAT Reading & Writing: The Ultimate Study Guide","https://www.youtube.com/watch?v=gEBv9EUSTe0"]];
+var VID_M=[["SAT Math and English Full Review","https://www.youtube.com/watch?v=JK-L8q8_W8c"],["Ultimate Desmos Guide to Digital SAT Math (плейлист)","https://www.youtube.com/playlist?list=PLREMg1hjwo3yeLHVxUN7ccSKlNzBUmIrY"],["Full SAT Desmos Guide (7 Minutes)","https://www.youtube.com/watch?v=k2UZX09zwSQ"]];
+function yt(q){return "https://www.youtube.com/results?search_query="+encodeURIComponent("digital SAT "+q)}
+function gensFor(test){var a=[];G.forEach(function(_,i){if(test(GK[i]))a.push("g"+i)});H.forEach(function(_,i){if(test(HK[i]))a.push("h"+i)});return a}
+function poolIds(test,n,per){var ids=shuffle(HAND.filter(function(id){return test(BANK[id].k)}),Math.random),gs=gensFor(test);gs.forEach(function(g){for(var i=0;i<per;i++)ids.push(g+":"+newSeed())});return shuffle(ids,Math.random).slice(0,n)}
+function domAcc(i){var r=0,t=0;DOM[i].k.forEach(function(_,j){var a=(S.st||{})[i+"-"+j];if(a){r+=a[0];t+=a[1]}});return t?Math.round(r/t*100)+"% · "+t+" решено":"ещё не решали"}
+var lnCur=null;
+function lnDraw(){
+  if(lnCur===null){$("lnList").innerHTML=DOM.map(function(d,i){return '<div class="card"><div class="dayhead"><span class="pill">'+d.s+'</span><h3>'+esc(d.n)+'</h3></div><p class="small muted">'+d.w+' · уроков: '+d.k.length+' · точность: '+domAcc(i)+'</p><div class="row" style="margin-top:10px"><button class="pri" data-ld="'+i+'">Открыть раздел</button></div></div>'}).join("");return}
+  var i=lnCur,d=DOM[i],vids=d.s==="Math"?VID_M:VID_RW;
+  $("lnDom").innerHTML='<div class="head"><h1>'+esc(d.n)+'</h1><button data-lback="1">← Все разделы</button></div><div class="grid g2"><div class="card"><h3>Видео по разделу</h3>'+vids.map(function(v){return '<div class="res"><a href="'+v[1]+'" target="_blank" rel="noopener">'+esc(v[0])+'</a></div>'}).join("")+'<div class="res"><a href="'+yt(d.n)+'" target="_blank" rel="noopener">Ещё видео: поиск YouTube по разделу</a></div></div><div class="card"><h3>Тест по разделу</h3><p class="small muted" style="margin:6px 0 12px">10 вопросов по таймеру, каждый раз новый набор. Точность по разделу: '+domAcc(i)+'.</p><button class="pri" data-ltest="'+i+'">Начать тест</button></div></div>'+d.k.map(function(n,j){var k=i+"-"+j,L=LES[k],a=(S.st||{})[k];return '<div class="card"><div class="dayhead"><span class="pill num">Урок '+(j+1)+'</span><h3>'+esc(n)+'</h3>'+(a?'<span class="pill num '+(a[0]/a[1]>=.8?"good":a[0]/a[1]>=.6?"warn":"bad")+'">'+a[0]+"/"+a[1]+'</span>':"")+'</div><p>'+esc(L[0])+'</p><ol class="steps small">'+L[1].map(function(s){return "<li>"+esc(s)+"</li>"}).join("")+'</ol><div class="ex"><b>Ловушка.</b> '+esc(L[2])+'</div><div class="row" style="margin-top:12px"><button class="pri" data-lp="'+k+'">Решать задания по теме</button><a href="'+yt(n)+'" target="_blank" rel="noopener">Видео по теме на YouTube</a></div></div>'}).join("");
+}
+$("v-learn").addEventListener("click",function(e){
+  var t=e.target.closest("button");if(!t)return;var d=t.dataset;
+  if(d.ld!==undefined){lnCur=+d.ld;$("lnHome").hidden=true;$("lnDom").hidden=false;lnDraw();window.scrollTo(0,0)}
+  else if(d.lback){lnCur=null;$("lnDom").hidden=true;$("lnHome").hidden=false;lnDraw()}
+  else if(d.lp){var k=d.lp;location.hash="#bank";prStart(poolIds(function(x){return x===k},12,4),"Тема: "+SK[k].n)}
+  else if(d.ltest!==undefined){location.hash="#minis";miniStart("d"+d.ltest)}
+});
+
+/* ---------- more tests: by domain and mixed ---------- */
+var bt0=buildTest;
+buildTest=function(id){
+  var test=null,t="",sec="";
+  if(id==="mixrw"){test=function(k){return +k[0]<4};t="R&W · быстрый микс";sec="rw"}
+  else if(id==="mixm"){test=function(k){return +k[0]>=4};t="Math · быстрый микс";sec="m"}
+  else if(/^d\d$/.test(id)){var i=+id[1];test=function(k){return +k[0]===i};t="Тест по разделу: "+DOM[i].n;sec=DOM[i].s==="Math"?"m":"rw"}
+  if(!test)return bt0(id);
+  var q=poolIds(test,10,2).map(getQ).filter(Boolean).sort(function(a,b){return a.lvl-b.lvl});
+  return{id:id,t:t,sec:sec,min:sec==="rw"?12:16,q:q};
+};
+var ml0=miniList;
+miniList=function(){
+  if(mt)return;ml0();
+  var Rr=S.minis||{},list=[["mixrw","R&W · быстрый микс","все темы секции"],["mixm","Math · быстрый микс","все темы секции"]].concat(DOM.map(function(d,i){return["d"+i,d.s+" · "+d.n,"тест по разделу"]}));
+  $("miniList").insertAdjacentHTML("beforeend",list.map(function(x){var r=Rr[x[0]];return '<div class="card"><div class="dayhead"><h3>'+esc(x[1])+'</h3><span class="pill">'+x[2]+'</span></div><p class="small muted">10 вопросов · '+(/R&W/.test(x[1])?12:16)+' минут · новый набор каждый раз</p><p class="small" style="margin:8px 0 12px">'+(r?'Последний результат: <b class="num">'+r.last+'/10</b> · лучший: <b class="num">'+r.best+'/10</b>':'Ещё не пройден')+'</p><button class="pri" data-mstart="'+x[0]+'">Начать</button></div>'}).join(""));
+};
+
+/* ---------- vocabulary quiz with answer choices and a final score ---------- */
+var vq=null,VQN=15;
+function vqStart(){var un=[],kn=[];V.forEach(function(w,i){(S.vocab[w[0]]?kn:un).push(i)});shuffle(un,Math.random);shuffle(kn,Math.random);vq={list:un.concat(kn).slice(0,VQN),i:0,ok:0,miss:[],pick:null,opts:null};vqDraw()}
+function vqDraw(){
+  var el=$("vq");
+  if(!vq){el.innerHTML='<h2>Квиз по словам</h2><p class="small muted" style="margin:6px 0 12px">'+VQN+' слов, у каждого четыре варианта перевода. В конце вы увидите результат и слова, которые нужно повторить. Сначала идут слова, которые вы ещё не выучили.</p><button class="pri" data-vs="1">Начать раунд</button>';return}
+  if(vq.i>=vq.list.length){var n=vq.list.length,p=Math.round(vq.ok/n*100);el.innerHTML='<h2>Результат раунда</h2><div class="big" style="margin:8px 0">'+vq.ok+" / "+n+'</div><p><span class="pill '+(p>=80?"good":p>=60?"warn":"bad")+'">'+p+'%</span> '+(p>=80?"Отличный результат.":p>=60?"Неплохо, повторите слова с ошибками.":"Пройдите раунд ещё раз: слова с ошибками вернутся первыми.")+'</p>'+(vq.miss.length?'<div class="ex" style="margin-top:10px"><b>Повторить:</b> '+vq.miss.map(function(i){return esc(V[i][0]+" — "+V[i][1])}).join("; ")+'</div>':"")+'<div class="row" style="margin-top:12px"><button class="pri" data-vs="1">Ещё раунд</button></div>';return}
+  var w=V[vq.list[vq.i]];
+  if(!vq.opts){var o=[vq.list[vq.i]],all=shuffle(V.map(function(_,i){return i}),Math.random);for(var j=0;o.length<4&&j<all.length;j++)if(o.indexOf(all[j])<0)o.push(all[j]);vq.opts=shuffle(o,Math.random)}
+  el.innerHTML='<div class="small muted num">Слово '+(vq.i+1)+" из "+vq.list.length+" · верно "+vq.ok+'</div><div style="font:700 30px var(--display);margin:10px 0 4px">'+esc(w[0])+'</div>'+vq.opts.map(function(i,j){var cl=vq.pick===null?"":(i===vq.list[vq.i]?" ok":vq.pick===j?" no":"");return '<button class="choice'+cl+'" data-vo="'+j+'"'+(vq.pick!==null?" disabled":"")+'><b>'+"ABCD"[j]+'</b><span>'+esc(V[i][1])+'</span></button>'}).join("")+(vq.pick!==null?'<div class="row" style="margin-top:12px"><button class="pri" data-vn="1">'+(vq.i+1>=vq.list.length?"Показать результат":"Дальше →")+'</button></div>':"");
+}
+$("vq").addEventListener("click",function(e){
+  var t=e.target.closest("button");if(!t)return;var d=t.dataset;
+  if(d.vs){vqStart()}
+  else if(d.vo!==undefined&&vq&&vq.pick===null){vq.pick=+d.vo;var ix=vq.list[vq.i],right=vq.opts[vq.pick]===ix;if(right){vq.ok++;S.vocab[V[ix][0]]=1}else{vq.miss.push(ix);delete S.vocab[V[ix][0]]}vqDraw()}
+  else if(d.vn&&vq){vq.i++;vq.pick=null;vq.opts=null;if(vq.i>=vq.list.length)save(true);vqDraw()}
+});
+vqDraw();
+
 /* ---------- routing ---------- */
-var VIEWS=["bank","minis","desmos","today","plan","toolkit","resources","drill","vocab","tests","errors","skills","testday"];
+var VIEWS=["learn","hacks","bank","minis","desmos","today","plan","toolkit","resources","drill","vocab","tests","errors","skills","testday"];
 function route(){var h=(location.hash||"").slice(1);if(VIEWS.indexOf(h)<0)h="today";VIEWS.forEach(function(v){$("v-"+v).classList.toggle("on",v===h)});Array.prototype.forEach.call(document.querySelectorAll("#nav a"),function(a){a.classList.toggle("on",a.getAttribute("href")==="#"+h)});window.scrollTo(0,0)}
 window.addEventListener("hashchange",route);
 
